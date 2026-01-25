@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<nav>
+    <div style="font-weight:bold; font-size:1.2rem;">AI Resume Critiquer</div>
+    <div>
+        <button class="btn-nav" onclick="toggleTheme()">🌗 Theme</button>
+        <a href="upload.html" class="btn-nav" style="margin-left: 10px;">Upload New</a>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="sidebar">
+        <div class="history-card">
+            <h3 style="margin-bottom: 15px; color: #3b82f6;">Recent Scans</h3>
+            <div id="historyList">
+                <p style="color:#94a3b8; font-size: 0.9rem;">No history yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Analysis for <span id="candidateName">...</span></h1>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="downloadPDF()" class="btn-nav" style="background: #3b82f6; font-size: 0.9rem;">
+                    📥 Download PDF
+                </button>
+                <button onclick="toggleDebug()" class="btn-nav" style="background: #64748b; font-size: 0.9rem;">
+                    👁️ View Raw Text
+                </button>
+            </div>
+        </div>
+
+        <div class="card score-container" style="margin-top: 0;">
+            <h3>Overall Score</h3>
+            <div class="score-val"><span id="scoreVal">0</span> / 100</div>
+            <div class="score-bar-bg">
+                <div id="scoreFill" class="score-bar-fill"></div>
+            </div>
+        </div>
+
+        <div class="card result-section">
+            <h3>Professional Summary</h3>
+            <p id="summaryText">Loading...</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card result-section">
+                <h3 style="color: #16a34a;">✅ Strengths</h3>
+                <ul id="strengthsList"></ul>
+            </div>
+            <div class="card result-section">
+                <h3 style="color: #dc2626;">⚠️ Critical Gaps</h3>
+                <ul id="weaknessesList"></ul>
+            </div>
+        </div>
+
+        <div class="card result-section">
+            <h3>💡 Suggested Rewrites</h3>
+            <div id="improvementsList"></div>
+        </div>
+    </div>
+</div>
+
+<div id="debugModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleDebug()">&times;</span>
+        <h3>🔍 Raw Extracted Text (OCR Output)</h3>
+        <p style="font-size: 0.9rem; color: #64748b;">This is exactly what the AI read from your file. If this looks like gibberish, the scan failed.</p>
+        <pre id="rawTextContent">Loading...</pre>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
