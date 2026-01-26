@@ -57,12 +57,6 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 4.  **Open Browser:**
     Go to `http://127.0.0.1:8000`
 
-## 📸 Screenshots
-
-| Upload Interface | Analysis Result |
-|:---:|:---:|
-| *(Add screenshot of upload page here)* | *(Add screenshot of results page here)* |
-
 ## 🤝 Contributing
 
 1.  Fork the repository.
@@ -74,3 +68,4 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
