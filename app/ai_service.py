@@ -2,15 +2,23 @@ import ollama
 import json
 import re
 
-MODEL_NAME = "llama3.1"
+MODEL_NAME = "qwen3:8b"
 
 BASE_SYSTEM_PROMPT = """
-You are a Binary Logic Assessor.
-Your ONLY job is to verify if a candidate meets the MANDATORY REQUIREMENTS.
-Output ONLY valid JSON.
+You are a Senior Technical Recruiter and Resume Critique Expert.
+
+Your job is to:
+1. Evaluate resumes holistically (skills, projects, impact, wording).
+2. Think like an ATS + a human recruiter.
+3. Always provide actionable feedback.
+4. Always suggest improved bullet point rewrites.
+5. Always produce a professional summary.
+
+Output ONLY valid JSON matching the provided schema.
+Do NOT include explanations outside JSON.
 """
 
-def clean_json_text(text):
+def clean_json_text(text: str) -> str:
     text = re.sub(r"```json", "", text, flags=re.IGNORECASE)
     text = re.sub(r"```", "", text)
     start = text.find("{")
@@ -22,62 +30,86 @@ def clean_json_text(text):
 async def critique_resume(parsed_data, job_description=None):
     print(f"🤖 (Local AI) Analyzing with {MODEL_NAME}...")
 
-    if parsed_data['type'] == 'image_url':
+    if parsed_data.get("type") == "image_url":
         return {
             "candidate_name": "Unknown",
             "overall_score": 0,
-            "summary": "Llama 3.1 cannot read images.",
-            "strengths": [], "weaknesses": [], "improvements": [],
+            "summary": "Unable to analyze image-based resumes.",
+            "strengths": [],
+            "weaknesses": [],
+            "improvements": [],
             "raw_text": ""
         }
 
-    # --- THE LOGIC BRANCH ---
+    resume_text = parsed_data.get("content", "")
+
+    # ---------------- PROMPT ----------------
+    prompt = f"""
+TASK: Perform a deep resume critique.
+
+RESUME TEXT:
+{resume_text}
+
+"""
+
     if job_description:
-        print("🎯 LOGIC MODE: verifying technical match...")
-        prompt_content = f"""
-        TASK: Check for Critical Skills Mismatch.
-        
-        RESUME:
-        {parsed_data['content']}
+        prompt += f"""
+JOB DESCRIPTION:
+{job_description}
 
-        JOB DESCRIPTION (JD):
-        {job_description}
+IMPORTANT:
+- Treat the JD as the ATS reference.
+- Missing core tools MUST be listed as weaknesses using:
+  "MISSING: <skill>"
+"""
 
-        INSTRUCTIONS:
-        1. Compare the Hard Skills in JD vs Resume.
-        2. "is_match": False if missing core tools (ISVA, TDI, LDAP, etc.).
-        3. "weaknesses": MUST list the missing tools. Format them exactly like this: "MISSING: [Tool Name]".
-           Example: ["MISSING: IBM Security Verify Access", "MISSING: Tivoli Directory Integrator"]
-        
-        JSON SCHEMA:
-        {{
-            "candidate_name": "Name",
-            "is_match": boolean, 
-            "overall_score": 0, 
-            "summary": "Briefly explain the gap.",
-            "strengths": ["List matching skills"],
-            "weaknesses": ["MISSING: Tool1", "MISSING: Tool2"],
-            "improvements": []
-        }}
-        """
-    else:
-        # Normal Mode
-        prompt_content = f"""
-        TASK: Analyze this resume.
-        RESUME: {parsed_data['content']}
-        JSON SCHEMA:
-        {{
-            "candidate_name": "Name",
-            "is_match": true,
-            "overall_score": 50,
-            "summary": "Summary",
-            "strengths": [], "weaknesses": [], "improvements": []
-        }}
-        """
+    prompt += """
+ANALYSIS REQUIREMENTS (MANDATORY):
+
+1. Identify key TECHNICAL SKILLS.
+2. Identify PROJECTS built by the candidate.
+   - Evaluate project complexity.
+   - Check for impact, scale, and ownership.
+3. Critique WORDING:
+   - Detect weak bullets ("worked on", "helped", "responsible for").
+   - Rewrite them using strong action verbs and measurable impact.
+4. Generate a PROFESSIONAL SUMMARY:
+   - 3–4 lines
+   - Recruiter tone
+   - Mention strengths + gaps.
+5. Generate AT LEAST 3 IMPROVEMENTS.
+   - Each improvement must be either:
+     a) A before/after bullet rewrite
+     b) A concrete suggestion to improve projects or wording
+
+SCORING RULES:
+- Base score on:
+  Skills relevance (40%)
+  Project quality & depth (40%)
+  Wording & clarity (20%)
+- Score range: 0–100
+- If major JD mismatch exists, cap score at 35.
+
+JSON SCHEMA (STRICT):
+{
+  "candidate_name": "Name or Unknown",
+  "overall_score": number,
+  "summary": "Professional summary",
+  "strengths": ["..."],
+  "weaknesses": ["..."],
+  "improvements": [
+    {
+      "original": "Original bullet or empty",
+      "better": "Improved bullet or suggestion",
+      "why": "Reason"
+    }
+  ]
+}
+"""
 
     messages = [
         {"role": "system", "content": BASE_SYSTEM_PROMPT},
-        {"role": "user", "content": prompt_content}
+        {"role": "user", "content": prompt}
     ]
 
     try:
@@ -85,40 +117,51 @@ async def critique_resume(parsed_data, job_description=None):
             model=MODEL_NAME,
             messages=messages,
             format="json",
-            options={"temperature": 0.0}
+            options={
+                "temperature": 0.2,
+                "num_ctx": 8192
+            }
         )
 
-        raw_content = response['message']['content']
-        cleaned_content = clean_json_text(raw_content)
-        data = json.loads(cleaned_content)
+        raw = response["message"]["content"]
+        cleaned = clean_json_text(raw)
+        data = json.loads(cleaned)
 
-        # --- PYTHON OVERRIDE ---
-        score = data.get("overall_score", 0)
-        is_match = data.get("is_match", True)
+        # ---------------- PYTHON SAFETY NET ----------------
+        improvements = data.get("improvements", [])
+        if not improvements:
+            improvements = [{
+                "original": "",
+                "better": "Add quantified impact to your project descriptions (users, scale, performance).",
+                "why": "Recruiters prioritize measurable results over responsibilities."
+            }]
 
-        if job_description and is_match is False:
-            print(f"⚠️ MISMATCH DETECTED. Crushing score from {score} to 12.")
-            score = 12  # HARD CAP
-        
-        final_data = {
+        score = int(data.get("overall_score", 50))
+        score = max(0, min(score, 100))
+
+        final = {
             "candidate_name": data.get("candidate_name", "Candidate"),
             "overall_score": score,
-            "summary": data.get("summary", "Analysis complete."),
+            "summary": data.get("summary", "Professional summary unavailable."),
             "strengths": data.get("strengths", []),
             "weaknesses": data.get("weaknesses", []),
-            "improvements": data.get("improvements", []),
-            "raw_text": parsed_data['content'] # Send Raw Text
+            "improvements": improvements,
+            "raw_text": resume_text
         }
 
-        print(f"✅ Analysis complete! Final Score: {score}")
-        return final_data
+        print(f"✅ Analysis complete | Score: {score}")
+        return final
 
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"❌ AI Service Error: {e}")
         return {
             "candidate_name": "Error",
             "overall_score": 0,
-            "summary": "Error parsing AI response.",
-            "strengths": [], "weaknesses": [], "improvements": [],
+            "summary": "Failed to analyze resume.",
+            "strengths": [],
+            "weaknesses": [],
+            "improvements": [],
             "raw_text": str(e)
         }
+
+
