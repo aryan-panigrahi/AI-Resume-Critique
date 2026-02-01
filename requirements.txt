@@ -1,8 +1,10 @@
 fastapi
 uvicorn
-python-multipart
-python-docx
-pypdf
-openai
-pillow
+ollama
 python-dotenv
+google-generativeai
+pypdf
+python-docx
+pillow
+pytesseract
+#also install tessarct OCR and Ollama seperately.
