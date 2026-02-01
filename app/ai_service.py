@@ -2,14 +2,21 @@ import ollama
 import json
 import re
 
-MODEL_NAME = "qwen3:8b"
+MODEL_NAME = "llama3.1"
 
 BASE_SYSTEM_PROMPT = """
-You are a Senior Technical Recruiter and Resume Critique Expert.
+You are a strict ATS-style Technical Recruiter and Resume Critique Expert.
 
-Your job is to:
+Your behavior rules:
+- Evaluate resumes ruthlessly, not politely.
+- Avoid average or safe scoring.
+- Use the FULL 1–100 scoring range.
+- Weak resumes MUST receive very low scores.
+- Exceptional resumes MUST receive very high scores.
+
+You must:
 1. Evaluate resumes holistically (skills, projects, impact, wording).
-2. Think like an ATS + a human recruiter.
+2. Think like an ATS + a senior recruiter.
 3. Always provide actionable feedback.
 4. Always suggest improved bullet point rewrites.
 5. Always produce a professional summary.
@@ -45,11 +52,10 @@ async def critique_resume(parsed_data, job_description=None):
 
     # ---------------- PROMPT ----------------
     prompt = f"""
-TASK: Perform a deep resume critique.
+TASK: Perform a deep, ATS-style resume critique.
 
 RESUME TEXT:
 {resume_text}
-
 """
 
     if job_description:
@@ -58,8 +64,8 @@ JOB DESCRIPTION:
 {job_description}
 
 IMPORTANT:
-- Treat the JD as the ATS reference.
-- Missing core tools MUST be listed as weaknesses using:
+- Treat the JD as the ATS reference baseline.
+- Missing CORE tools MUST be listed as weaknesses using:
   "MISSING: <skill>"
 """
 
@@ -68,27 +74,42 @@ ANALYSIS REQUIREMENTS (MANDATORY):
 
 1. Identify key TECHNICAL SKILLS.
 2. Identify PROJECTS built by the candidate.
-   - Evaluate project complexity.
-   - Check for impact, scale, and ownership.
+   - Evaluate complexity, scale, ownership, and impact.
 3. Critique WORDING:
    - Detect weak bullets ("worked on", "helped", "responsible for").
-   - Rewrite them using strong action verbs and measurable impact.
+   - Rewrite using strong action verbs and measurable outcomes.
 4. Generate a PROFESSIONAL SUMMARY:
    - 3–4 lines
    - Recruiter tone
-   - Mention strengths + gaps.
+   - Clearly state strengths and gaps.
 5. Generate AT LEAST 3 IMPROVEMENTS.
    - Each improvement must be either:
      a) A before/after bullet rewrite
-     b) A concrete suggestion to improve projects or wording
+     b) A concrete project or wording improvement suggestion
 
-SCORING RULES:
-- Base score on:
-  Skills relevance (40%)
-  Project quality & depth (40%)
-  Wording & clarity (20%)
-- Score range: 0–100
-- If major JD mismatch exists, cap score at 35.
+SCORING RULES (STRICT):
+
+- Score range: 1–100 (use full range).
+- Base the score on:
+  • Skills relevance → 40%
+  • Project quality & depth → 40%
+  • Wording & clarity → 20%
+
+SCORING BANDS:
+- 90–100 → Exceptional, near-ideal candidate
+- 70–89 → Strong candidate with minor gaps
+- 40–69 → Partial fit with notable weaknesses
+- 10–39 → Weak fit, limited relevance
+- 1–9 → Extremely weak or irrelevant resume
+
+MISMATCH RULE (HARD CONSTRAINT):
+- If a MAJOR job-description mismatch exists,
+  cap the FINAL score at 35 regardless of sub-quality.
+
+DISTRIBUTION RULE:
+- Do NOT cluster scores around 50–70.
+- Penalize weak resumes aggressively.
+- Reward exceptional resumes decisively.
 
 JSON SCHEMA (STRICT):
 {
@@ -118,7 +139,7 @@ JSON SCHEMA (STRICT):
             messages=messages,
             format="json",
             options={
-                "temperature": 0.2,
+                "temperature": 0.15,
                 "num_ctx": 8192
             }
         )
@@ -137,7 +158,7 @@ JSON SCHEMA (STRICT):
             }]
 
         score = int(data.get("overall_score", 50))
-        score = max(0, min(score, 100))
+        score = max(1, min(score, 100))  # enforce 1–100
 
         final = {
             "candidate_name": data.get("candidate_name", "Candidate"),
@@ -156,12 +177,10 @@ JSON SCHEMA (STRICT):
         print(f"❌ AI Service Error: {e}")
         return {
             "candidate_name": "Error",
-            "overall_score": 0,
+            "overall_score": 1,
             "summary": "Failed to analyze resume.",
             "strengths": [],
             "weaknesses": [],
             "improvements": [],
             "raw_text": str(e)
         }
-
-
