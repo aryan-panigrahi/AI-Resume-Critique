@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,80 +8,127 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
+
 <body>
 
-<nav>
-    <div style="font-weight:bold; font-size:1.2rem;">AI Resume Critiquer</div>
-    <div>
-        <button class="btn-nav" onclick="toggleTheme()">🌗 Theme</button>
-        <a href="upload.html" class="btn-nav" style="margin-left: 10px;">Upload New</a>
-    </div>
-</nav>
-
-<div class="main-wrapper">
-    <div class="sidebar">
-        <div class="history-card">
-            <h3 style="margin-bottom: 15px; color: #3b82f6;">Recent Scans</h3>
-            <div id="historyList">
-                <p style="color:#94a3b8; font-size: 0.9rem;">No history yet.</p>
-            </div>
+    <nav>
+        <a href="index.html" style="text-decoration: none;">
+            <div class="logo">✨ AI Resume Critiquer</div>
+        </a>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-nav btn-secondary" onclick="toggleTheme()">🌗 Theme</button>
+            <a href="upload.html" class="btn-nav">Upload New</a>
         </div>
-    </div>
+    </nav>
 
-    <div class="content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>Analysis for <span id="candidateName">...</span></h1>
-            
-            <div style="display: flex; gap: 10px;">
-                <button onclick="downloadPDF()" class="btn-nav" style="background: #3b82f6; font-size: 0.9rem;">
-                    📥 Download PDF
-                </button>
-                <button onclick="toggleDebug()" class="btn-nav" style="background: #64748b; font-size: 0.9rem;">
-                    👁️ View Raw Text
-                </button>
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <div class="history-card">
+                <h3 style="margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                    <span>⏱️</span> Recent Scans
+                </h3>
+                <div id="historyList">
+                    <p style="color:var(--text-muted); font-size: 0.95rem; text-align: center; padding: 2rem 0;">No
+                        history yet.</p>
+                </div>
             </div>
         </div>
 
-        <div class="card score-container" style="margin-top: 0;">
-            <h3>Overall Score</h3>
-            <div class="score-val"><span id="scoreVal">0</span> / 100</div>
-            <div class="score-bar-bg">
-                <div id="scoreFill" class="score-bar-fill"></div>
+        <div class="content">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h1 style="margin: 0;">Analysis for <span id="candidateName" style="color: var(--primary);">...</span>
+                </h1>
+
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="downloadPDF()" class="btn-nav" style="background: var(--primary);">
+                        📥 Download PDF
+                    </button>
+                    <button onclick="toggleDebug()" class="btn-nav btn-secondary">
+                        👁️ View Raw Text
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div class="card result-section">
-            <h3>Professional Summary</h3>
-            <p id="summaryText">Loading...</p>
-        </div>
+            <div class="card score-container">
+                <h2 style="margin-bottom: 2rem; color: var(--text-main);">Overall ATS Match Score</h2>
+                <div class="score-flex">
+                    <!-- Circular CSS representation of score handled in JS if we want, but for simplicity let's use the UI with a large bold number -->
+                    <div class="circular-score" id="circularScore" style="--score: 0;">
+                        <span class="score-val-inner" id="scoreVal">0</span>
+                    </div>
+                    <p style="margin-top: 1rem; font-weight: 500; font-size: 1.1rem; color: var(--text-muted);">Out of
+                        100</p>
+                </div>
+            </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="card result-section">
-                <h3 style="color: #16a34a;">✅ Strengths</h3>
-                <ul id="strengthsList"></ul>
+                <h3><span style="font-size: 1.5rem;">📝</span> Professional Summary</h3>
+                <p id="summaryText" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-main);">Loading...</p>
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="grid-2">
+                <div class="card result-section" style="margin-top:0;">
+                    <h3 style="color: var(--success);"><span style="font-size: 1.4rem;">✅</span> Key Strengths</h3>
+                    <div id="strengthsList" class="badge-container"></div>
+                </div>
+                <div class="card result-section" style="margin-top:0;">
+                    <h3 style="color: var(--danger);"><span style="font-size: 1.4rem;">⚠️</span> Critical Gaps</h3>
+                    <div id="weaknessesList" class="badge-container"></div>
+                </div>
+            </div>
+
             <div class="card result-section">
-                <h3 style="color: #dc2626;">⚠️ Critical Gaps</h3>
-                <ul id="weaknessesList"></ul>
+                <h3 style="margin-bottom: 1.5rem;"><span style="font-size: 1.5rem;">💡</span> Suggested Rewrites &
+                    Advice</h3>
+                <div id="improvementsList"></div>
             </div>
         </div>
+    </div>
 
-        <div class="card result-section">
-            <h3>💡 Suggested Rewrites</h3>
-            <div id="improvementsList"></div>
+    <div id="debugModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleDebug()">&times;</span>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">🔍 Raw Extracted Text (OCR Output)</h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">This is exactly what the AI read from your file. If
+                this looks like gibberish, the scan failed.</p>
+            <pre id="rawTextContent">Loading...</pre>
         </div>
     </div>
-</div>
 
-<div id="debugModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="toggleDebug()">&times;</span>
-        <h3>🔍 Raw Extracted Text (OCR Output)</h3>
-        <p style="font-size: 0.9rem; color: #64748b;">This is exactly what the AI read from your file. If this looks like gibberish, the scan failed.</p>
-        <pre id="rawTextContent">Loading...</pre>
-    </div>
-</div>
+    <script src="script.js"></script>
+    <script>
+        // Extend the existing script.js to update the circular score var
+        const observer = new MutationObserver(() => {
+            const scoreVal = document.getElementById("scoreVal");
+            const circular = document.getElementById("circularScore");
+            if (scoreVal && circular) {
+                let s = parseInt(scoreVal.innerText) || 0;
+                circular.style.setProperty('--score', s);
 
-<script src="script.js"></script>
+                // Adjust color dynamically based on score
+                if (s >= 80) circular.style.background = `conic-gradient(var(--success) calc(${s} * 1%), var(--surface-border) 0)`;
+                else if (s >= 50) circular.style.background = `conic-gradient(var(--warning) calc(${s} * 1%), var(--surface-border) 0)`;
+                else circular.style.background = `conic-gradient(var(--danger) calc(${s} * 1%), var(--surface-border) 0)`;
+
+                if (s >= 80) scoreVal.style.color = 'var(--success)';
+                else if (s >= 50) scoreVal.style.color = 'var(--warning)';
+                else scoreVal.style.color = 'var(--danger)';
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const scoreVal = document.getElementById("scoreVal");
+            if (scoreVal) {
+                observer.observe(scoreVal, { childList: true, characterData: true, subtree: true });
+                // Initial trigger
+                setTimeout(() => {
+                    let s = parseInt(scoreVal.innerText) || 0;
+                    document.getElementById("circularScore").style.setProperty('--score', s);
+                }, 500);
+            }
+        });
+    </script>
 </body>
+
 </html>

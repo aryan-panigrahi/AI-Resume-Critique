@@ -1,48 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Resume</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<nav>
-    <div style="font-weight:bold; font-size:1.2rem;">AI Resume Critiquer</div>
-    <div>
-        <button class="btn-nav" onclick="toggleTheme()">🌗 Theme</button>
+    <nav>
+        <a href="index.html" style="text-decoration: none;">
+            <div class="logo">✨ AI Resume Critiquer</div>
+        </a>
+        <div>
+            <button class="btn-nav btn-secondary" onclick="toggleTheme()">🌗 Theme</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 800px;">
+        <h1>Upload Your Resume</h1>
+        <p style="margin-bottom: 2rem;">Supported Formats: PDF, DOCX, JPG, PNG</p>
+
+        <div class="card">
+            <div style="text-align: left; margin-bottom: 2rem;">
+                <label
+                    style="font-weight: 600; font-size: 1.1rem; display: block; margin-bottom: 12px; color: var(--text-main);">🎯
+                    Target Job Description <span
+                        style="font-weight: 400; color: var(--text-muted);">(Optional)</span></label>
+                <textarea id="jobDesc" rows="4"
+                    placeholder="Paste the job description here to see how well you match..."></textarea>
+            </div>
+
+            <div class="upload-box" onclick="document.getElementById('resumeInput').click()">
+                <div class="upload-icon">📁</div>
+                <h3 style="margin-bottom: 0.5rem;">Click to Browse Files</h3>
+                <p style="font-size: 0.9rem;">or drag and drop here</p>
+                <input type="file" id="resumeInput" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display:none"
+                    onchange="document.getElementById('fileName').innerText = 'Selected: ' + this.files[0].name">
+                <p id="fileName" style="color: var(--primary); font-weight: 700; margin-top:1.5rem; font-size: 1.1rem;">
+                </p>
+            </div>
+
+            <button class="btn" onclick="uploadAndAnalyze()" style="width: 100%;">⚡ Analyze with AI</button>
+
+            <div id="thinkingSteps" class="thinking-container">
+                <h4 style="margin-bottom: 15px; color: var(--primary);">AI is working its magic...</h4>
+                <div id="step1" class="step-item pending"><span class="step-icon"></span> Extracting text & OCR...</div>
+                <div id="step2" class="step-item pending"><span class="step-icon"></span> Reading Job Description...
+                </div>
+                <div id="step3" class="step-item pending"><span class="step-icon"></span> Analyzing Hard Skills &
+                    Impact...</div>
+                <div id="step4" class="step-item pending"><span class="step-icon"></span> Calculating Match Score...
+                </div>
+            </div>
+        </div>
     </div>
-</nav>
 
-<div class="container">
-    <h1>Upload Your Resume</h1>
-    <p>Supported Formats: PDF, DOCX, JPG, PNG</p>
-
-    <div class="card">
-        <div style="text-align: left; margin-bottom: 20px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 8px;">Target Job Description (Optional):</label>
-            <textarea id="jobDesc" rows="4" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="Paste the job description here to see how well you match..."></textarea>
-        </div>
-
-        <div class="upload-box" onclick="document.getElementById('resumeInput').click()">
-            <span style="font-size: 2rem;">📂</span>
-            <p>Click to Browse Files</p>
-            <input type="file" id="resumeInput" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display:none" onchange="document.getElementById('fileName').innerText = this.files[0].name">
-            <p id="fileName" style="color: #3b82f6; font-weight: bold; margin-top:10px;"></p>
-        </div>
-
-        <button class="btn" onclick="uploadAndAnalyze()">Analyze with AI</button>
-        
-        <div id="thinkingSteps" class="thinking-container">
-            <div id="step1" class="step-item pending"><span class="step-icon"></span> Extracting text & OCR...</div>
-            <div id="step2" class="step-item pending"><span class="step-icon"></span> Reading Job Description...</div>
-            <div id="step3" class="step-item pending"><span class="step-icon"></span> Analyzing Hard Skills...</div>
-            <div id="step4" class="step-item pending"><span class="step-icon"></span> Calculating Match Score...</div>
-        </div>
-    </div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
