@@ -24,8 +24,11 @@
     <div class="main-wrapper">
         <div class="sidebar">
             <div class="history-card">
-                <h3 style="margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-                    <span>⏱️</span> Recent Scans
+                <h3
+                    style="margin-bottom: 20px; color: var(--primary); display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 8px;"><span>⏱️</span> Recent Scans</span>
+                    <button onclick="clearHistory()"
+                        style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem; text-decoration:underline;">Clear</button>
                 </h3>
                 <div id="historyList">
                     <p style="color:var(--text-muted); font-size: 0.95rem; text-align: center; padding: 2rem 0;">No
@@ -67,7 +70,7 @@
                 <p id="summaryText" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-main);">Loading...</p>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="grid-2">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 1.5rem;" class="grid-2">
                 <div class="card result-section" style="margin-top:0;">
                     <h3 style="color: var(--success);"><span style="font-size: 1.4rem;">✅</span> Key Strengths</h3>
                     <div id="strengthsList" class="badge-container"></div>

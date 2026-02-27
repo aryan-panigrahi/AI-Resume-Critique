@@ -81,6 +81,13 @@ function renderHistorySidebar() {
     });
 }
 
+function clearHistory() {
+    if (confirm("Are you sure you want to clear your scan history?")) {
+        localStorage.removeItem("scanHistory");
+        renderHistorySidebar();
+    }
+}
+
 // --- DEBUG & PDF ---
 function toggleDebug() {
     const modal = document.getElementById("debugModal");
