@@ -31,31 +31,46 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 
 ### Prerequisites
 1.  **Python 3.9+** installed.
-2.  **Ollama** installed and running (`ollama run llama3.1`).
-3.  **Tesseract OCR** installed (Windows/Linux/Mac).
+2.  **Ollama** installed and running with at least one local LLM downloaded (e.g., `llama3.1` or `qwen3:8b`).
+3.  **Tesseract OCR** installed for image/OCR support (Windows/Linux/Mac).
 
-### Installation
+### Setup & Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/ai-resume-critiquer.git](https://github.com/YOUR_USERNAME/ai-resume-critiquer.git)
+    git clone https://github.com/YOUR_USERNAME/ai-resume-critiquer.git
     cd ai-resume-critiquer
     ```
 
-2.  **Install Python dependencies:**
-    ```bash
-    pip install fastapi uvicorn python-multipart python-docx ollama pytesseract pdf2image aiofiles
-    ```
+2.  **Setup Virtual Environment & Dependencies:**
+    * **Windows (Automated):** Simply double-click `run_app.bat`! It will automatically create a local virtual environment (`.venv`), install the necessary requirements (including `python-multipart`), check your Ollama status, and boot the server.
+    * **Manual Setup:**
+        ```bash
+        # Create virtual environment
+        python -m venv .venv
+        
+        # Activate environment
+        # Windows:
+        .venv\Scripts\activate
+        # macOS/Linux:
+        source .venv/bin/activate
+
+        # Install dependencies
+        pip install -r requirements.txt python-multipart
+        ```
 
 3.  **Run the App:**
     * **Windows:** Double-click `run_app.bat`.
     * **Manual:**
         ```bash
-        uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+        .venv\Scripts\uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
         ```
 
 4.  **Open Browser:**
     Go to `http://127.0.0.1:8000`
+
+> [!NOTE]
+> **Dynamic LLM Fallback:** The backend is configured to search for `llama3.1` in your local Ollama registry on startup. If not found, it automatically falls back to your first available local model (such as `qwen3:8b`) to prevent server crashes.
 
 ## 🤝 Contributing
 

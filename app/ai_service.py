@@ -35,7 +35,21 @@ def clean_json_text(text: str) -> str:
     return text
 
 async def critique_resume(parsed_data, job_description=None):
-    print(f"🤖 (Local AI) Analyzing with {MODEL_NAME}...")
+    # Determine the model to use dynamically
+    model_to_use = MODEL_NAME
+    try:
+        models_list = ollama.list()
+        available_models = [m.model for m in models_list.models] if hasattr(models_list, 'models') else []
+        if MODEL_NAME not in available_models and not any(m.startswith(MODEL_NAME + ":") for m in available_models):
+            if available_models:
+                model_to_use = available_models[0]
+                print(f"⚠️ '{MODEL_NAME}' not found. Falling back to available model: '{model_to_use}'")
+            else:
+                print(f"⚠️ No models found in Ollama. Will attempt to use '{MODEL_NAME}' which may fail.")
+    except Exception as list_err:
+        print(f"⚠️ Failed to list Ollama models: {list_err}. Proceeding with default model '{MODEL_NAME}'.")
+
+    print(f"🤖 (Local AI) Analyzing with {model_to_use}...")
 
     if parsed_data.get("type") == "image_url":
         return {
@@ -135,7 +149,7 @@ JSON SCHEMA (STRICT):
 
     try:
         response = ollama.chat(
-            model=MODEL_NAME,
+            model=model_to_use,
             messages=messages,
             format="json",
             options={

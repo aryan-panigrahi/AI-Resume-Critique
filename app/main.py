@@ -1,3 +1,12 @@
+import sys
+# Force sys.stdout and sys.stderr to use UTF-8 on Windows
+if sys.platform.startswith('win'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 #from dotenv import load_dotenv
 # load_dotenv()
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
