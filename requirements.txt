@@ -1,10 +1,10 @@
 fastapi
 uvicorn
-ollama
+httpx
 python-dotenv
 google-generativeai
 pypdf
 python-docx
 pillow
 pytesseract
-#also install tessarct OCR and Ollama seperately.
+#also install tesseract OCR and LM Studio separately.

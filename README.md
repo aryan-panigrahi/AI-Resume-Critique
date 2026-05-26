@@ -1,4 +1,4 @@
-# 🚀 Local AI Resume Critiquer (Privacy-Focused)
+# 🚀 Scope: Local AI Resume Critiquer (Privacy-Focused)
 
 A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OCR (Tesseract)** to analyze resumes against job descriptions. It runs entirely on your machine—**no data ever leaves your computer.**
 
@@ -9,7 +9,7 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 
 ## ✨ Key Features
 
-* **🧠 Deep AI Analysis:** Uses **Llama 3.1** via Ollama to "think" like a ruthless technical recruiter.
+* **🧠 Deep AI Analysis:** Uses **Llama 3.1** via LM Studio to "think" like a ruthless technical recruiter.
 * **👁️ Optical Character Recognition (OCR):** Supports **PDF, DOCX, JPG, and PNG**. It can read screenshots of resumes.
 * **🔒 100% Privacy:** Runs on `localhost`. Your personal data never touches the cloud.
 * **🎯 "Ruthless Mode":** Detects critical skill gaps. If you miss mandatory hard skills (e.g., "Kubernetes"), it crushes the score to <15/100.
@@ -22,7 +22,7 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 ## 🛠️ Tech Stack
 
 * **Backend:** Python (FastAPI), Uvicorn
-* **AI Engine:** Ollama (Llama 3.1)
+* **AI Engine:** LM Studio (Local LLMs)
 * **OCR Engine:** Tesseract (pytesseract)
 * **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
 * **Libraries:** `pdf2image`, `python-docx`, `html2pdf.js`
@@ -31,7 +31,7 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
 
 ### Prerequisites
 1.  **Python 3.9+** installed.
-2.  **Ollama** installed and running with at least one local LLM downloaded (e.g., `llama3.1` or `qwen3:8b`).
+2.  **LM Studio** installed and running with a local model loaded and its "Local Server" started (default port 1234).
 3.  **Tesseract OCR** installed for image/OCR support (Windows/Linux/Mac).
 
 ### Setup & Installation
@@ -43,7 +43,7 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
     ```
 
 2.  **Setup Virtual Environment & Dependencies:**
-    * **Windows (Automated):** Simply double-click `run_app.bat`! It will automatically create a local virtual environment (`.venv`), install the necessary requirements (including `python-multipart`), check your Ollama status, and boot the server.
+    * **Windows (Automated):** Simply double-click `run_app.bat`! It will automatically create a local virtual environment (`.venv`), install the necessary requirements (including `python-multipart`), check your LM Studio Local Server status, and boot the server.
     * **Manual Setup:**
         ```bash
         # Create virtual environment
@@ -70,7 +70,7 @@ A powerful, full-stack application that uses **Local LLMs (Llama 3.1)** and **OC
     Go to `http://127.0.0.1:8000`
 
 > [!NOTE]
-> **Dynamic LLM Fallback:** The backend is configured to search for `llama3.1` in your local Ollama registry on startup. If not found, it automatically falls back to your first available local model (such as `qwen3:8b`) to prevent server crashes.
+> **Dynamic LLM Loading:** The backend is configured to query the active model loaded in LM Studio dynamically on startup. Make sure you load your desired LLM in LM Studio and start the Local Server.
 
 ## 🤝 Contributing
 

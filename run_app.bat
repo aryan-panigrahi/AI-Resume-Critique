@@ -1,29 +1,30 @@
 @echo off
-TITLE AI Resume Critiquer
+TITLE Scope
 COLOR 0A
 
 echo ==================================================
-echo      STARTING LOCAL AI RESUME CRITIQUER
+echo         STARTING SCOPE LOCAL AI CRITIQUER
 echo ==================================================
 echo.
 
-echo [1/3] Checking if Ollama is running...
-tasklist /FI "IMAGENAME eq ollama.exe" 2>NUL | find /I /N "ollama.exe">NUL
-set OLLAMA_RUNNING=%ERRORLEVEL%
-if "%OLLAMA_RUNNING%" NEQ "0" (
-    tasklist /FI "IMAGENAME eq ollama_app.exe" 2>NUL | find /I /N "ollama_app.exe">NUL
-    set OLLAMA_RUNNING=%ERRORLEVEL%
-)
-
-if "%OLLAMA_RUNNING%"=="0" (
-    echo    -- Ollama is running. Good.
+echo [1/3] Checking if LM Studio Local Server is running...
+curl -s -f -o NUL http://localhost:1234/v1/models
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ⚠️ WARNING: LM Studio Local Server does not appear to be active at http://localhost:1234
+    echo.
+    echo Please follow these steps to start it:
+    echo    1. Open LM Studio on your computer.
+    echo    2. Load your desired LLM - such as Llama 3.1 or Qwen 2.5 - in the top bar.
+    echo    3. Click on the "Local Server" tab - double-arrow icon - in the left sidebar.
+    echo    4. Click the "Start Server" button - using default port 1234.
+    echo.
+    echo Once you have started the local server, press any key below to continue...
+    pause >nul
+    echo.
+    echo    -- Proceeding with startup...
 ) else (
-    echo    -- Starting Ollama...
-    if exist "C:\Users\%USERNAME%\AppData\Local\Programs\Ollama\ollama app.exe" (
-        start "" "C:\Users\%USERNAME%\AppData\Local\Programs\Ollama\ollama app.exe"
-    ) else (
-        start /b "" "C:\Users\%USERNAME%\AppData\Local\Programs\Ollama\ollama.exe" serve
-    )
+    echo    -- LM Studio Local Server is active and running. Good.
 )
 
 echo [2/3] Starting Python Backend...
@@ -38,7 +39,7 @@ if exist .venv\Scripts\uvicorn.exe (
 )
 
 :: Wait a moment for server to boot
-timeout /t 3 >nul
+ping 127.0.0.1 -n 4 >nul
 
 echo [3/3] Opening Application...
 start index.html

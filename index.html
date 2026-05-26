@@ -1,67 +1,2295 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Critiquer</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scope - Dashboard</title>
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <!-- Google Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- html2pdf.js for exporting report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#1f1f1f",
+                        "surface-container-highest": "#222222",
+                        "on-secondary-fixed": "#fb923c",
+                        "tertiary": "#fb923c",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#503d00",
+                        "primary-container": "#1a2e05",
+                        "tertiary-fixed-dim": "#fb923c",
+                        "surface-container-high": "#161616",
+                        "error-container": "#4a1210",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "on-background": "#f5f5f5",
+                        "on-primary-fixed": "#22005d",
+                        "on-tertiary": "#3e2e00",
+                        "primary-fixed": "#e9ddff",
+                        "inverse-surface": "#e6e0e9",
+                        "on-primary-container": "#cfbcff",
+                        "inverse-primary": "#cfbcff",
+                        "surface-container-lowest": "#080808",
+                        "surface-container-low": "#0c0c0c",
+                        "error": "#f87171",
+                        "on-secondary": "#342b4b",
+                        "on-surface": "#f5f5f5",
+                        "secondary-fixed": "#e9ddff",
+                        "surface-tint": "#cfbcff",
+                        "inverse-on-surface": "#322f35",
+                        "tertiary-container": "#c9a74d",
+                        "primary": "#a3e635",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "on-surface-variant": "#a3a3a3",
+                        "on-error": "#690005",
+                        "surface-dim": "#0a0a0a",
+                        "primary-fixed-dim": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "secondary": "#fb923c",
+                        "surface-bright": "#1e1e1e",
+                        "surface": "#121212",
+                        "surface-container": "#141414",
+                        "background": "#070707",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-variant": "#1c1c1c",
+                        "on-secondary-container": "#bfb2da",
+                        "outline-variant": "#181818",
+                        "secondary-container": "#2e1a05",
+                        "on-primary": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "xs": "8px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "xl": "64px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Outfit"],
+                        "label-sm": ["Outfit"],
+                        "body-md": ["Outfit"],
+                        "display-lg": ["Outfit"],
+                        "headline-lg": ["Outfit"],
+                        "body-lg": ["Outfit"],
+                        "label-md": ["Outfit"],
+                        "headline-lg-mobile": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070707;
+            color: #f5f5f5;
+        }
+        
+        /* Premium Translucent Glassmorphism Card Base */
+        .glass-card {
+            background: rgba(18, 18, 18, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Gradient Button with Glow */
+        .btn-gradient {
+            background: #a3e635;
+            box-shadow: 0px 4px 12px rgba(163, 230, 53, 0.15);
+            color: #070707;
+            font-weight: 700;
+            border-radius: 9999px !important; /* Capsule style buttons */
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: var(--y, 50%);
+            left: var(--x, 50%);
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .btn-gradient:hover::before {
+            opacity: 1;
+        }
+        .btn-gradient:hover:not(:disabled) {
+            background: #bef264;
+            box-shadow: 0px 6px 20px rgba(163, 230, 53, 0.3);
+            transform: translateY(-2px);
+        }
+        .btn-gradient:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Dropzone Active */
+        .dropzone-active {
+            border-color: #a3e635 !important;
+            background-color: rgba(163, 230, 53, 0.05) !important;
+            box-shadow: inset 0 0 20px rgba(163, 230, 53, 0.1);
+        }
+
+        /* Radial Progress - Conic Gradient */
+        .score-gauge {
+            border-radius: 50%;
+            background: conic-gradient(var(--score-color) var(--score-deg), #1c1c1c 0deg);
+            position: relative;
+            transition: background 1.5s ease-out;
+        }
+        .score-gauge::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            background-color: #121212;
+        }
+
+        /* Neural Network Animation */
+        .neural-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #a3e635;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #a3e635;
+            animation: pulse-node 2s infinite ease-in-out alternate;
+        }
+        @keyframes pulse-node {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            100% { transform: scale(1.2); opacity: 1; }
+        }
+        .neural-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #a3e635, transparent);
+            height: 2px;
+            opacity: 0.5;
+            animation: move-line 3s infinite linear;
+        }
+        @keyframes move-line {
+            0% { background-position: -100px 0; }
+            100% { background-position: 200px 0; }
+        }
+        
+        /* Floating particles keyframe */
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-15px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        .ambient-particle {
+            transition: transform 0.25s ease-out; /* smooth parallax transition */
+        }
+
+        /* Staggered Animation */
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* State Transitions */
+        .view-state {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .view-hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            position: absolute;
+            visibility: hidden;
+            display: none !important;
+        }
+
+
+        #history-drawer {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .drawer-collapsed {
+            transform: translateX(-350px) !important;
+            width: 0px !important;
+            opacity: 0;
+            overflow: hidden;
+            border-right-width: 0px !important;
+        }
+
+        /* Hide Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c1c1c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333333;
+        }
+
+        /* Custom History List Styling */
+        .history-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .history-item:hover {
+            background-color: rgba(163, 230, 53, 0.08);
+            border-left-color: #a3e635;
+        }
+
+        /* Custom high fidelity elements */
+        .glow-lime {
+            box-shadow: 0 0 15px rgba(163, 230, 53, 0.2);
+        }
+        .glow-orange {
+            box-shadow: 0 0 15px rgba(251, 146, 60, 0.2);
+        }
+        .glow-white {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* LUSION.CO INTERACTIVE KINETIC PHYSICS ENGINE STYLES        */
+        /* ═══════════════════════════════════════════════════════════ */
+
+        /* Full-window constellation canvas behind everything */
+        #constellation-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+
+    </style>
 </head>
+<body class="h-screen flex flex-col font-body-md text-body-md overflow-hidden relative">
+    
+    <!-- ═══ LUSION.CO CONSTELLATION CANVAS ═══ -->
+    <canvas id="constellation-canvas"></canvas>
 
-<body>
 
-    <nav>
-        <div class="logo">✨ AI Resume Critiquer</div>
-        <button class="btn-nav btn-secondary" onclick="toggleTheme()">🌗 Theme</button>
-    </nav>
+    <!-- Ambient Glow Background -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <!-- Dynamic Cursor Spotlight Follower -->
+        <div id="cursor-glow" class="absolute w-[600px] h-[600px] bg-[#8b5cf6] rounded-full blur-[180px] opacity-0 pointer-events-none z-0 transition-opacity duration-1000" style="transform: translate3d(0,0,0); will-change: transform;"></div>
+    </div>
 
-    <div class="container">
-        <div style="margin-bottom: 2rem; animation: slideDown 0.8s ease-out;">
-            <h1 style="font-size: 3.5rem; line-height: 1.2;">Optimize Your Resume<br>with Local AI</h1>
-            <p style="font-size: 1.25rem; max-width: 600px; margin: 0 auto; margin-top: 1rem;">
-                Private, Free, and Powered by Llama 3.1. Get instant, tailored, ATS-style feedback on your formatting,
-                keywords, and impact.
-            </p>
+    <!-- TopNavBar -->
+    <nav class="bg-surface/5 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm flex justify-between items-center w-full px-gutter h-16 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black shrink-0 relative overflow-hidden select-none shadow-[0_4px_12px_rgba(255,255,255,0.15)]">
+                <!-- High Fidelity Custom Scope Target Reticle & ATS Checkmark Logo -->
+                <svg viewBox="0 0 100 100" class="w-[26px] h-[26px]" fill="none" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Outer Scope Reticle Circle -->
+                    <circle cx="50" cy="50" r="33" stroke="black" stroke-width="9" />
+                    <!-- Reticle Cardinal Crosshair Marks -->
+                    <path d="M50 5 V17 M50 83 V95 M5 50 H17 M83 50 H95" stroke="black" stroke-width="9" />
+                    <!-- Bold Validation Checkmark indicating ATS Scan Success -->
+                    <path d="M36 51 L46 61 L66 35" stroke="black" stroke-width="11" />
+                </svg>
+            </div>
+            <span class="text-headline-md font-headline-md font-bold text-white tracking-tight ml-1">Scope</span>
+            
+            <div class="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#121212] rounded-full border border-outline-variant/30 ml-4">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-[pulse_1.5s_infinite]"></span>
+                <span class="text-label-sm font-label-sm text-on-surface-variant">LM Studio Active</span>
+            </div>
         </div>
 
-        <div class="card" style="text-align: center; animation: fadeIn 1s ease-out 0.3s both;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">📄🤖</div>
-            <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Ready to level up your career?</h3>
-            <p style="margin-bottom: 2rem;">Upload your resume and optional job description, and our AI will critique it
-                ruthlessly.</p>
-            <a href="upload.html" style="text-decoration: none;">
-                <button class="btn" style="padding: 1.2rem 3rem; font-size: 1.2rem;">Get Started 🚀</button>
-            </a>
+        <!-- Center Capsule Tabs styled exactly like reference screenshot -->
+        <div class="hidden md:flex items-center gap-2 bg-[#121212]/80 border border-outline-variant/20 rounded-full p-1 shadow-inner">
+            <div onclick="transitionToUploadOrResults()" id="nav-tab-upload" class="flex items-center gap-2 bg-[#1c1c1c]/90 border border-[#2b2b2b]/60 text-white px-4 py-1.5 rounded-full text-label-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer select-none">
+                <span class="material-symbols-outlined text-[16px] text-primary">inventory_2</span>
+                <span>Check Box</span>
+            </div>
+            <div onclick="transitionTo('PULSE')" id="nav-tab-pulse" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                <span class="material-symbols-outlined text-[16px]">newspaper</span>
+                <span>Job Pulse</span>
+            </div>
+            <div onclick="toggleHistoryDrawer()" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                <span class="material-symbols-outlined text-[16px]">monitoring</span>
+                <span>Monitoring</span>
+            </div>
+            <div onclick="toggleSupportModal()" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                <span class="material-symbols-outlined text-[16px]">support_agent</span>
+                <span>Support</span>
+            </div>
+            <div onclick="toggleDebug()" class="w-8 h-8 rounded-full bg-[#161616] border border-[#222222] flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all duration-200 cursor-pointer ml-1">
+                <span class="material-symbols-outlined text-[16px]">search</span>
+            </div>
+        </div>
+
+        <!-- Right Profile with Name, Handle, and Badged initials avatar -->
+        <div class="flex items-center gap-4">
+            <!-- Utility sweep & debugger buttons -->
+            <div class="flex items-center gap-1 border-r border-[#1c1c1c] pr-4">
+                <button onclick="toggleDebug()" title="View Raw Extracted Text" class="text-on-surface-variant hover:text-primary transition-colors flex items-center p-1.5 rounded-lg hover:bg-surface-variant/40"><span class="material-symbols-outlined text-[20px]">terminal</span></button>
+                <button onclick="clearHistory()" title="Clear Scan History" class="text-on-surface-variant hover:text-primary transition-colors flex items-center p-1.5 rounded-lg hover:bg-surface-variant/40"><span class="material-symbols-outlined text-[20px]">delete_sweep</span></button>
+            </div>
+            
+            <div class="hidden sm:flex flex-col text-right select-none">
+                <span class="text-label-md font-semibold text-white/95 leading-none">Aryan Panigrahi</span>
+                <span class="text-label-sm font-light text-on-surface-variant leading-none mt-1">@Aryan</span>
+            </div>
+            
+            <div class="w-10 h-10 rounded-full bg-primary text-black font-extrabold flex items-center justify-center shadow-lg relative border-2 border-[#1c1c1c] cursor-pointer group">
+                AP
+                <div class="absolute -top-1 -right-1 w-4.5 h-4.5 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#121212] select-none">2</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-1 overflow-hidden z-10 relative">
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-gutter relative" id="main-content">
+            
+            <!-- STATE 1: Upload Hub -->
+            <div class="max-w-container-max mx-auto view-state w-full p-4 md:p-gutter" id="state-upload">
+                <div class="mb-8">
+                    <h1 class="text-headline-lg font-headline-lg mb-2">New Resume Analysis</h1>
+                    <p class="text-on-surface-variant">Upload your resume and optional job description baseline to get an ATS optimization critique.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+                    <!-- Left: Resume Dropzone -->
+                    <div class="md:col-span-5 flex flex-col h-full">
+                        <label class="text-label-md font-label-md mb-2 text-on-surface-variant">Resume Document</label>
+                        <div class="flex-1 min-h-[300px] border-2 border-dashed border-outline-variant/40 rounded-xl bg-surface-container/20 flex flex-col items-center justify-center p-8 text-center cursor-pointer transition-all duration-300 hover:border-primary/50 hover:bg-surface-container/40" id="dropzone" onclick="document.getElementById('file-input').click()">
+                            <!-- Default upload prompt -->
+                            <div id="dropzone-prompt">
+                                <div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center mb-4 mx-auto">
+                                    <span class="material-symbols-outlined text-[32px] text-primary" id="dropzone-icon">upload_file</span>
+                                </div>
+                                <h3 class="text-body-lg font-body-lg text-on-surface mb-2" id="dropzone-title">Drag &amp; Drop Resume</h3>
+                                <p class="text-label-sm font-label-sm text-on-surface-variant mb-4" id="dropzone-subtitle">Supports PDF, DOCX, TXT, Images (Max 5MB)</p>
+                                <button class="px-4 py-2 border border-outline-variant/30 rounded-lg text-label-md font-label-md hover:bg-surface-variant transition-colors">Browse Files</button>
+                            </div>
+                            <!-- File preview (shown after selection) -->
+                            <div id="dropzone-preview" class="hidden w-full">
+                                <div class="flex items-center gap-4 bg-[#0c0c0c]/60 border border-white/[0.06] rounded-xl p-5 mx-auto max-w-sm">
+                                    <div class="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-primary text-[26px]" id="preview-icon">description</span>
+                                    </div>
+                                    <div class="flex-1 text-left min-w-0">
+                                        <p class="text-body-md font-semibold text-white truncate" id="preview-name">file.pdf</p>
+                                        <p class="text-label-sm text-on-surface-variant font-light" id="preview-size">0.5 MB</p>
+                                    </div>
+                                    <button onclick="event.stopPropagation(); removeSelectedFile();" class="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/20 border border-white/[0.06] hover:border-red-500/30 flex items-center justify-center text-on-surface-variant hover:text-red-400 transition-all shrink-0" title="Remove file">
+                                        <span class="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
+                                </div>
+                                <p class="text-[11px] text-primary font-medium mt-3">✓ Ready to critique</p>
+                            </div>
+                            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: JD Text Area -->
+                    <div class="md:col-span-7 flex flex-col h-full">
+                        <label class="text-label-md font-label-md mb-2 text-on-surface-variant">Target Job Description (Optional baseline)</label>
+                        <textarea id="jd-input" class="flex-1 min-h-[300px] glass-card rounded-xl p-6 w-full resize-none text-body-md font-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/50 bg-transparent placeholder-on-surface-variant/50" placeholder="Paste the job description keywords here to verify candidate skill matches..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-end">
+                    <button class="btn-gradient px-8 py-4 rounded-xl text-body-lg font-body-lg font-semibold flex items-center gap-3" id="btn-critique" onclick="triggerAnalysis()">
+                        Critique Resume
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                    </button>
+                </div>
+
+                <!-- How to Use Scope Guide -->
+                <div class="mt-12 border-t border-outline-variant/10 pt-8 stagger-item">
+                    <h3 class="text-headline-md font-headline-md mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                        Quick Start Guide - How to use Scope
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+                        <!-- Step 1 -->
+                        <div class="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden bg-surface/20">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-label-md">1</div>
+                            <h4 class="text-body-md font-semibold text-on-surface">Open LM Studio</h4>
+                            <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Launch LM Studio on your machine. (Make sure you have downloaded at least one LLM, like Llama 3.1 or DeepSeek-R1).</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden bg-surface/20">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-label-md">2</div>
+                            <h4 class="text-body-md font-semibold text-on-surface">Start Local Server</h4>
+                            <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Go to the double-arrow tab <strong>(&lt;-&gt;)</strong> in the left sidebar and click <strong>"Start Server"</strong> on the default port 1234.</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden bg-surface/20">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-label-md">3</div>
+                            <h4 class="text-body-md font-semibold text-on-surface">Upload Documents</h4>
+                            <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Drag and drop your resume file above. Optional: Paste the target job description to match mandatory key skills.</p>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden bg-surface/20">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-label-md">4</div>
+                            <h4 class="text-body-md font-semibold text-on-surface">Analyze Privately</h4>
+                            <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Click <strong>"Critique Resume"</strong>. The backend will parse your files, run a private analysis, and show your dashboard!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Use the Web Dashboard -->
+                <div class="mt-8 pt-6 border-t border-outline-variant/10 stagger-item">
+                    <h3 class="text-headline-md font-headline-md mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">web</span>
+                        Dashboard Features & Navigation Guide
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                        <!-- Navigation Card -->
+                        <div class="glass-card rounded-xl p-5 flex gap-4 relative overflow-hidden bg-surface/20">
+                            <span class="material-symbols-outlined text-primary text-[32px] shrink-0 mt-1">history</span>
+                            <div>
+                                <h4 class="text-body-md font-semibold text-on-surface mb-1">Interactive Scan History</h4>
+                                <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Toggle the menu (three lines) in the top navbar to slide open your scan history sidebar. Clicking any item instantly reloads past scores and critiques.</p>
+                            </div>
+                        </div>
+                        <!-- Features Card -->
+                        <div class="glass-card rounded-xl p-5 flex gap-4 relative overflow-hidden bg-surface/20">
+                            <span class="material-symbols-outlined text-primary text-[32px] shrink-0 mt-1">content_copy</span>
+                            <div>
+                                <h4 class="text-body-md font-semibold text-on-surface mb-1">One-Click Copy & PDF Export</h4>
+                                <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Copy optimized recruiter-approved bullet rewrites directly to your clipboard using the Copy button, or export a print-ready PDF critique report using the Download button.</p>
+                            </div>
+                        </div>
+                        <!-- Debug Card -->
+                        <div class="glass-card rounded-xl p-5 flex gap-4 relative overflow-hidden bg-surface/20">
+                            <span class="material-symbols-outlined text-primary text-[32px] shrink-0 mt-1">terminal</span>
+                            <div>
+                                <h4 class="text-body-md font-semibold text-on-surface mb-1">Terminal Raw Text & Data Sweep</h4>
+                                <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Click the terminal icon in the top navbar to inspect the raw text extracted from your PDF or images. Click the sweep icon next to it to clear your local session cache.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATE 2: Loading State -->
+            <div class="view-state view-hidden flex flex-col items-center justify-center min-h-[600px] w-full relative overflow-hidden select-none" id="state-loading">
+                <!-- Ambient Drifting Background Nodes (Parallax Targets) -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                    <div class="ambient-particle absolute w-1.5 h-1.5 rounded-full bg-primary/25 top-[15%] left-[20%] animate-[float_8s_infinite_ease-in-out]" style="animation-delay: 0s;"></div>
+                    <div class="ambient-particle absolute w-2 h-2 rounded-full bg-secondary/20 top-[25%] right-[25%] animate-[float_10s_infinite_ease-in-out]" style="animation-delay: 1.5s;"></div>
+                    <div class="ambient-particle absolute w-1.5 h-1.5 rounded-full bg-white/15 bottom-[30%] left-[15%] animate-[float_12s_infinite_ease-in-out]" style="animation-delay: 3s;"></div>
+                    <div class="ambient-particle absolute w-2.5 h-2.5 rounded-full bg-primary/15 bottom-[20%] right-[15%] animate-[float_9s_infinite_ease-in-out]" style="animation-delay: 0.5s;"></div>
+                    <div class="ambient-particle absolute w-1.5 h-1.5 rounded-full bg-secondary/20 top-[45%] left-[8%] animate-[float_14s_infinite_ease-in-out]" style="animation-delay: 2.2s;"></div>
+                    <div class="ambient-particle absolute w-2 h-2 rounded-full bg-primary/15 top-[60%] right-[8%] animate-[float_11s_infinite_ease-in-out]" style="animation-delay: 4.1s;"></div>
+                    <div class="ambient-particle absolute w-1.5 h-1.5 rounded-full bg-white/20 top-[10%] right-[40%] animate-[float_7s_infinite_ease-in-out]" style="animation-delay: 0.8s;"></div>
+                    <div class="ambient-particle absolute w-2.5 h-2.5 rounded-full bg-secondary/15 bottom-[10%] left-[45%] animate-[float_13s_infinite_ease-in-out]" style="animation-delay: 1.9s;"></div>
+                </div>
+
+                <div class="relative w-64 h-64 flex items-center justify-center mb-8 z-10 transition-transform duration-200 ease-out" id="loading-interactive-container">
+                    <!-- Orbital Systems (with 3D perspective tilts) -->
+                    <!-- Orbit 1 (Pistachio, fast, tilted) -->
+                    <div class="absolute w-36 h-36 border border-dashed border-primary/30 rounded-full flex items-center justify-center animate-[spin_6s_linear_infinite] pointer-events-none" style="transform: rotateX(65deg) rotateY(15deg);">
+                        <!-- Orbit Nodes -->
+                        <div class="w-3 h-3 rounded-full bg-primary absolute -top-1.5 shadow-[0_0_12px_#a3e635]"></div>
+                        <div class="w-2 h-2 rounded-full bg-primary/60 absolute -bottom-1 shadow-[0_0_8px_#a3e635]"></div>
+                    </div>
+                    
+                    <!-- Orbit 2 (Orange, medium speed, reverse tilt) -->
+                    <div class="absolute w-48 h-48 border border-dashed border-secondary/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite_reverse] pointer-events-none" style="transform: rotateX(45deg) rotateY(-20deg);">
+                        <!-- Orbit Nodes -->
+                        <div class="w-3 h-3 rounded-full bg-secondary absolute -left-1.5 shadow-[0_0_12px_#fb923c]"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-secondary/70 absolute -right-1 shadow-[0_0_8px_#fb923c]"></div>
+                    </div>
+
+                    <!-- Orbit 3 (White, slow speed, high tilt) -->
+                    <div class="absolute w-56 h-56 border border-dashed border-white/10 rounded-full flex items-center justify-center animate-[spin_15s_linear_infinite] pointer-events-none" style="transform: rotateX(30deg) rotateY(40deg);">
+                        <!-- Orbit Node -->
+                        <div class="w-3.5 h-3.5 rounded-full bg-white absolute top-4 left-10 shadow-[0_0_12px_rgba(255,255,255,0.8)]"></div>
+                    </div>
+                    
+                    <!-- Center Core Brain Module (Magnetic tilt target) -->
+                    <div id="loading-core" class="w-28 h-28 bg-[#121212] border-2 border-primary/40 rounded-full z-20 flex items-center justify-center shadow-[0_0_50px_rgba(163,230,53,0.25)] transition-transform duration-200 ease-out select-none relative overflow-hidden group">
+                        <!-- Glowing aura inside core -->
+                        <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span class="material-symbols-outlined text-[48px] text-primary animate-pulse">memory</span>
+                    </div>
+                </div>
+
+                <h3 class="text-headline-md font-headline-md mb-2 text-primary z-10" id="loading-text">⚙️ Extracting Text...</h3>
+                <p class="text-on-surface-variant max-w-sm text-center z-10 px-4 text-[13px] font-light leading-relaxed">Your data stays fully local. This may take 15–30s for the DeepSeek/Llama model to run reasoning steps.</p>
+                
+                <div class="w-64 h-1 bg-surface-variant rounded-full mt-6 overflow-hidden z-10">
+                    <div class="h-full bg-primary w-2/3 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                </div>
+            </div>
+
+            <!-- STATE 3: Results Section -->
+            <div class="view-state view-hidden max-w-container-max mx-auto pb-12 w-full p-4 md:p-gutter" id="state-results">
+                
+                <!-- Action Buttons bar -->
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="resetToUpload()" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-medium">
+                        <span class="material-symbols-outlined">arrow_back</span> Back to Upload
+                    </button>
+                    <button onclick="downloadReport()" class="btn-gradient px-4 py-2 rounded-lg text-label-md font-label-md font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined">download</span> Download PDF Report
+                    </button>
+                </div>
+
+                <div class="pdf-export-container select-none">
+                    <!-- Dashboard Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <h1 class="text-[32px] font-black tracking-wider text-white uppercase font-display-lg" id="dashboard-title">Check Box</h1>
+                    </div>
+
+                    <!-- Triple Column High Fidelity Dashboard Grid Canvas -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 stagger-item">
+                        
+                        <!-- Left Pane: Col span 7 (Metrics, Experience, Keywords) -->
+                        <div class="lg:col-span-7 flex flex-col gap-6">
+                            
+                            <!-- Sub-grid: Metrics card & Experience scatter grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                <!-- Card 1: ATS METRICS (Customer card) -->
+                                <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-start gap-4 h-[230px] relative overflow-hidden group select-none">
+                                    <div class="flex justify-between items-center z-10">
+                                        <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">ATS Scores</span>
+                                        <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                                    </div>
+                                    
+                                    <!-- Double Metrics Row -->
+                                    <div class="grid grid-cols-2 gap-4 z-10">
+                                        <div>
+                                            <div class="flex items-center gap-1">
+                                                <!-- Up Lime Arrow -->
+                                                <span class="material-symbols-outlined text-primary text-[20px]">arrow_drop_up</span>
+                                                <span class="text-[34px] font-black text-white leading-none font-display-lg" id="ats-score-badge">0%</span>
+                                            </div>
+                                            <span class="text-label-sm text-on-surface-variant font-light mt-1 block">ATS Match</span>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-1">
+                                                <!-- Up Orange Arrow -->
+                                                <span class="material-symbols-outlined text-secondary text-[20px]">arrow_drop_up</span>
+                                                <span class="text-[34px] font-black text-white leading-none font-display-lg" id="ats-readability-badge">0%</span>
+                                            </div>
+                                            <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Readability</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bottom: High Fidelity Overlapping Reactive Sparklines SVG -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-[70px] z-0 opacity-80 select-none pointer-events-none">
+                                        <svg viewBox="0 0 300 70" preserveAspectRatio="none" class="w-full h-full">
+                                            <defs>
+                                                <!-- Gradients -->
+                                                <linearGradient id="gradient-lime" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stop-color="#a3e635" stop-opacity="0.25"/>
+                                                    <stop offset="100%" stop-color="#a3e635" stop-opacity="0.0"/>
+                                                </linearGradient>
+                                                <linearGradient id="gradient-orange" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stop-color="#fb923c" stop-opacity="0.2"/>
+                                                    <stop offset="100%" stop-color="#fb923c" stop-opacity="0.0"/>
+                                                </linearGradient>
+                                            </defs>
+                                            
+                                            <!-- Areas -->
+                                            <path id="ats-sparkline-area" d="M 0 60 Q 75 60, 150 60 T 300 60 L 300 70 L 0 70 Z" fill="url(#gradient-lime)" />
+                                            <path id="readability-sparkline-area" d="M 0 60 Q 100 60, 200 60 T 300 60 L 300 70 L 0 70 Z" fill="url(#gradient-orange)" />
+                                            
+                                            <!-- Lines -->
+                                            <path id="ats-sparkline-line" d="M 0 60 Q 75 60, 150 60 T 300 60" fill="none" stroke="#a3e635" stroke-width="2.5" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(163,230,53,0.5)]" />
+                                            <path id="readability-sparkline-line" d="M 0 60 Q 100 60, 200 60 T 300 60" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(251,146,60,0.4)]" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card 2: EXPERIENCE SCATTER GRID (Product card top-middle) -->
+                                <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-between h-[230px] relative overflow-hidden group select-none">
+                                    <div class="flex justify-between items-center z-10">
+                                        <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Active Voice</span>
+                                        <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                                    </div>
+                                    
+                                    <!-- Double Metrics Row -->
+                                    <div class="grid grid-cols-2 gap-4 my-1 z-10">
+                                        <div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-primary text-[20px]">arrow_drop_up</span>
+                                                <span class="text-[34px] font-black text-white leading-none font-display-lg">2.8%</span>
+                                            </div>
+                                            <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Action Verbs</span>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-secondary text-[20px]">arrow_drop_down</span>
+                                                <span class="text-[34px] font-black text-white leading-none font-display-lg">3.2%</span>
+                                            </div>
+                                            <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Passive Voice</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bottom: Interactive Matrix Scatter Plot Circles exactly matching screenshot -->
+                                    <div class="flex flex-col gap-[6px] mt-2 select-none pointer-events-none opacity-90 z-0">
+                                        <!-- Row 1 -->
+                                        <div class="flex justify-between px-2">
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-white/70"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-white/80"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-white/90"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                        </div>
+                                        <!-- Row 2 -->
+                                        <div class="flex justify-between px-2">
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary/40"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-white/90 animate-pulse"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary/40"></span>
+                                        </div>
+                                        <!-- Row 3 -->
+                                        <div class="flex justify-between px-2">
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary/80"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                        </div>
+                                        <!-- Row 4 -->
+                                        <div class="flex justify-between px-2">
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary/30"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-[#1c1c1c]"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-primary"></span>
+                                            <span class="w-[8px] h-[8px] rounded-full bg-secondary/30"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card 3: ATS SKILL DOMAIN PROFILER -->
+                            <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-between h-[340px] select-none">
+                                <div class="flex flex-col gap-0.5">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">ATS Skill Domain Profiler</span>
+                                        <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                                    </div>
+                                    <p class="text-[10px] text-on-surface-variant font-normal leading-normal">
+                                        Maps required ATS baseline targets <span class="text-white font-medium">(top)</span> against candidate resume match density <span class="text-primary font-medium">(bottom)</span>.
+                                    </p>
+                                </div>
+                                
+                                <!-- Sliders Visual Row exactly mirroring reference screenshot -->
+                                <div class="flex justify-between items-end h-[180px] relative px-4 w-full">
+                                    <!-- Background horizontal center divider aligned with precision -->
+                                    <div class="absolute left-0 right-0 top-[72.5px] h-[1.5px] bg-[#1c1c1c] z-0 pointer-events-none"></div>
+                                    
+                                    <!-- 9 Vertical Skill Domain Rails -->
+                                    <!-- Rail 1: Languages -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-primary">Languages (LANG)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">80</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">85</strong></span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill (Baseline Target) -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-10 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">80</div>
+                                            <!-- Bottom Pill (Match Candidate) -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-11 bg-primary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(163,230,53,0.3)]">85</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-primary transition-colors">LANG</span>
+                                    </div>
+
+                                    <!-- Rail 2: Frontend -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-secondary">Frontend Web (FE)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">90</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">65</strong></span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-25)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-12 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">90</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-9 bg-secondary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(251,146,60,0.3)]">65</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-secondary transition-colors">FE</span>
+                                    </div>
+
+                                    <!-- Rail 3: Backend -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-primary">Backend Systems (BE)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">75</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">80</strong></span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-9 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">75</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-10 bg-primary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(163,230,53,0.3)]">80</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-primary transition-colors">BE</span>
+                                    </div>
+
+                                    <!-- Rail 4: Database -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-secondary">Databases (DB)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">85</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">50</strong></span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-35)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-11 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">85</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-8 bg-secondary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(251,146,60,0.3)]">50</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-secondary transition-colors">DB</span>
+                                    </div>
+
+                                    <!-- Rail 5: Cloud -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-primary">Cloud & Infrastructure (CLD)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">65</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">70</strong></span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-8 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">65</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-9 bg-primary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(163,230,53,0.3)]">70</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-primary transition-colors">CLD</span>
+                                    </div>
+
+                                    <!-- Rail 6: Testing -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-secondary">Testing & QA (QA)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">55</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">30</strong></span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-25)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-8 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">55</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-7 bg-secondary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(251,146,60,0.3)]">30</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-secondary transition-colors">QA</span>
+                                    </div>
+
+                                    <!-- Rail 7: DevOps/Git -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-primary">DevOps & Git (GIT)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">85</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">90</strong></span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-11 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">85</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-12 bg-primary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(163,230,53,0.3)]">90</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-primary transition-colors">GIT</span>
+                                    </div>
+
+                                    <!-- Rail 8: AI/ML -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-secondary">AI & Machine Learning (AI)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">95</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">55</strong></span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-40)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-13 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">95</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-8 bg-secondary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(251,146,60,0.3)]">55</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-secondary transition-colors">AI</span>
+                                    </div>
+
+                                    <!-- Rail 9: Soft Skills -->
+                                    <div class="flex flex-col items-center justify-between h-full w-[40px] z-10 group relative cursor-help">
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none transition-all duration-200 z-50">
+                                            <div class="bg-black/95 text-white border border-[#222] rounded-xl px-3 py-2 text-[11px] whitespace-nowrap shadow-2xl flex flex-col gap-0.5">
+                                                <span class="font-bold text-primary">Soft Skills & Agile (SOFT)</span>
+                                                <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">80</strong></span>
+                                                <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">85</strong></span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                            </div>
+                                            <!-- Arrow -->
+                                            <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
+                                        </div>
+
+                                        <div class="w-full h-[145px] relative">
+                                            <!-- Center Line Node -->
+                                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full bg-white border border-black z-20 shadow-[0_0_6px_rgba(255,255,255,0.8)]"></span>
+                                            <!-- Top Pill -->
+                                            <div class="absolute bottom-[55%] left-1/2 -translate-x-1/2 w-7 h-10 bg-white rounded-full flex items-center justify-center text-[11px] font-bold text-black border border-[#222222]">80</div>
+                                            <!-- Bottom Pill -->
+                                            <div class="absolute top-[55%] left-1/2 -translate-x-1/2 w-7 h-11 bg-primary rounded-full flex items-center justify-center text-[11px] font-bold text-black shadow-[0_0_8px_rgba(163,230,53,0.3)]">85</div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 group-hover:text-primary transition-colors">SOFT</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bottom Legend exactly matching reference styling -->
+                                <div class="flex justify-between items-center border-t border-[#1c1c1c] pt-4 mt-2 px-2 text-label-sm">
+                                    <div class="flex items-center gap-6">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-white select-none shadow-[0_0_8px_rgba(255,255,255,0.4)]"></span>
+                                            <span class="text-on-surface-variant font-medium text-[11px]">Baseline Target (Required)</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-primary select-none shadow-[0_0_8px_rgba(163,230,53,0.4)]"></span>
+                                            <span class="text-on-surface-variant font-medium text-[11px]">Resume Match</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-secondary select-none shadow-[0_0_8px_rgba(251,146,60,0.4)]"></span>
+                                            <span class="text-on-surface-variant font-medium text-[11px]">Keyword Gap</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-on-surface-variant font-medium text-[11px]" id="matrix-total-label">Total Keywords: 420</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Pane: Col span 5 (Projects timeline dashboard) -->
+                        <div class="lg:col-span-5 flex">
+                            
+                            <!-- Tall Card: PROJECTS TIMELINE -->
+                            <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-between w-full h-[836px] relative select-none">
+                                <div class="flex justify-between items-center mb-6 z-10">
+                                    <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Enhancement Priority</span>
+                                    <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                                </div>
+                                
+                                <!-- Background grid vertical dashed lines passing through pills -->
+                                <div class="absolute inset-x-0 top-16 bottom-20 px-8 flex justify-between z-0 pointer-events-none select-none">
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                    <span class="h-full border-r border-[#1c1c1c] border-dashed"></span>
+                                </div>
+                                
+                                <!-- Vertical Timeline bars wrapper -->
+                                <div class="flex-1 flex flex-col justify-between py-2 z-10">
+                                    
+                                    <!-- Timeline Row 1 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P1</span>
+                                        <div class="flex-1 flex justify-start select-none">
+                                            <!-- Lime Green timeline capsule with slack logo and values -->
+                                            <div class="w-[60%] bg-[#bef264] border border-[#bef264]/80 text-[#070707] py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <!-- Simplified Slack SVG logo -->
+                                                    <span class="material-symbols-outlined text-[15px] text-[#070707]">work</span>
+                                                    <span class="font-bold">ATS Alignment</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">16</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 2 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P2</span>
+                                        <div class="flex-1 flex justify-end pr-4 select-none">
+                                            <!-- Orange timeline capsule -->
+                                            <div class="w-[50%] bg-secondary text-black py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[15px]">trending_up</span>
+                                                    <span>Impact Verbs</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">29</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 3 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P3</span>
+                                        <div class="flex-1 flex justify-center select-none">
+                                            <!-- White timeline capsule with recruiter face circles mockup -->
+                                            <div class="w-[55%] bg-white text-black py-1 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <div class="flex -space-x-1.5">
+                                                        <span class="w-4.5 h-4.5 rounded-full bg-primary text-[8px] font-black text-black flex items-center justify-center border border-white select-none">R1</span>
+                                                        <span class="w-4.5 h-4.5 rounded-full bg-secondary text-[8px] font-black text-black flex items-center justify-center border border-white select-none">R2</span>
+                                                    </div>
+                                                    <span>Recruiter View</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">15</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 4 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P4</span>
+                                        <div class="flex-1 flex justify-center pl-10 select-none">
+                                            <div class="w-[58%] bg-primary text-black py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[15px]">verified</span>
+                                                    <span>Key Projects</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">21</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 5 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P5</span>
+                                        <div class="flex-1 flex justify-start pl-6 select-none">
+                                            <div class="w-[42%] bg-white text-black py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[15px]">chat</span>
+                                                    <span>Gaps Fix</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">10</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 6 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P6</span>
+                                        <div class="flex-1 flex justify-center select-none">
+                                            <div class="w-[48%] bg-secondary text-black py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[15px]">school</span>
+                                                    <span>Education highlight</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">15</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 7 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P7</span>
+                                        <div class="flex-1 flex justify-end pl-2 select-none">
+                                            <div class="w-[70%] bg-[#bef264] text-black py-1 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <div class="flex -space-x-1.5">
+                                                        <span class="w-4.5 h-4.5 rounded-full bg-white text-[8px] font-black text-black flex items-center justify-center border border-black select-none">AP</span>
+                                                        <span class="w-4.5 h-4.5 rounded-full bg-secondary text-[8px] font-black text-black flex items-center justify-center border border-black select-none">JD</span>
+                                                    </div>
+                                                    <span>Skill Match Sweep</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">19</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Row 8 -->
+                                    <div class="flex items-center w-full gap-4">
+                                        <span class="text-label-sm text-on-surface-variant font-bold w-12 tracking-wide text-right shrink-0">P8</span>
+                                        <div class="flex-1 flex justify-center pl-16 select-none">
+                                            <div class="w-[48%] bg-white text-black py-1.5 px-3 rounded-full flex items-center justify-between font-bold text-label-sm drop-shadow-md select-none">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[15px]">description</span>
+                                                    <span>Layout Format</span>
+                                                </div>
+                                                <span class="text-[11px] font-black opacity-80">8</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bottom Y-axis grid scale index metrics exactly matching screenshot -->
+                                <div class="flex justify-between items-center text-[10px] text-on-surface-variant/80 border-t border-[#1c1c1c] pt-4 mt-2 px-2 shrink-0">
+                                    <span class="w-12 shrink-0"></span>
+                                    <div class="flex-1 flex justify-between pr-4 font-mono select-none">
+                                        <span>0</span>
+                                        <span>5</span>
+                                        <span>10</span>
+                                        <span>15</span>
+                                        <span>20</span>
+                                        <span>25</span>
+                                        <span>30</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bottom Legend matching timeline theme -->
+                                <div class="flex justify-between items-center mt-3 px-2 text-label-sm">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-primary select-none"></span>
+                                            <span class="text-on-surface-variant font-medium">High Impact</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-secondary select-none"></span>
+                                            <span class="text-on-surface-variant font-medium">Medium Impact</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-white select-none"></span>
+                                            <span class="text-on-surface-variant font-medium">Low Impact</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-on-surface-variant font-medium" id="timeline-total-label">Total: 284</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Details: Recruiter Summary, Strengths, Gaps, Action Enhancements -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
+                        <!-- Recruiter Summary Card -->
+                        <div class="md:col-span-12 glass-card rounded-xl p-8 relative overflow-hidden stagger-item">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+                            <div class="flex items-start justify-between mb-6">
+                                <div>
+                                    <h2 class="text-headline-lg font-headline-lg mb-1" id="res-name">Name</h2>
+                                    <p class="text-on-surface-variant text-label-md font-label-md">Professional Candidate</p>
+                                </div>
+                                <div class="bg-surface-container px-3 py-1.5 rounded-lg border border-outline-variant/20 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px] text-primary">robot_2</span>
+                                    <span class="text-label-sm font-label-sm font-semibold">AI Recruiter Feedback</span>
+                                </div>
+                            </div>
+                            <p class="text-body-md font-body-md text-on-surface/90 leading-relaxed" id="res-summary">
+                                Critique details loaded successfully.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Middle Row: Strengths & Gaps -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-gutter">
+                        <!-- Strengths -->
+                        <div class="glass-card rounded-xl p-6 border-t-2 border-t-emerald-500/50 stagger-item">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+                                <h3 class="text-body-lg font-body-lg font-semibold">Key Strengths Found</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2" id="res-strengths">
+                                <!-- Injected Strengths pills -->
+                            </div>
+                        </div>
+                        <!-- Gaps -->
+                        <div class="glass-card rounded-xl p-6 border-t-2 border-t-error/50 stagger-item">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-error">warning</span>
+                                <h3 class="text-body-lg font-body-lg font-semibold">Missing Gaps / Keywords</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2" id="res-weaknesses">
+                                <!-- Injected Missing pills -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: Rewrite Suggestions -->
+                    <div class="stagger-item">
+                        <h3 class="text-headline-md font-headline-md mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">edit_square</span>
+                            Actionable Resume Enhancements
+                        </h3>
+                        <div class="flex flex-col gap-6" id="res-improvements">
+                            <!-- Rewrite suggestions rows injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATE 4: Job Market & Careers Insights Hub (Job Pulse Page) -->
+            <div class="view-state view-hidden max-w-container-max mx-auto pb-12 w-full p-4 md:p-gutter" id="state-market-pulse">
+                <!-- Header: Giant title and filter capsules styled exactly like results -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <h1 class="text-[32px] font-black tracking-wider text-white uppercase font-display-lg">Tech Market Pulse</h1>
+                        <p class="text-[13px] text-on-surface-variant font-light mt-1">Real-time technology hiring cycles, layoffs analytics, and hot emerging company hotspots.</p>
+                    </div>
+                    
+                    <!-- Filter capsules group -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="bg-[#121212] border border-outline-variant/30 px-4 py-2 rounded-full text-label-sm font-medium text-white flex items-center gap-2 cursor-pointer hover:bg-surface-variant/40 transition-colors">
+                            <span class="text-on-surface-variant font-light">Region:</span>
+                            <span>Global Tech</span>
+                            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                        </div>
+                        <div class="bg-primary text-black px-4 py-2 rounded-full text-label-sm font-bold shadow-md flex items-center gap-1.5 cursor-pointer">
+                            <span class="material-symbols-outlined text-[15px]">trending_up</span>
+                            <span>Q2 2026 Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Layout Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8">
+                    <!-- Left Column: News Box Feed (Col span 7) -->
+                    <div class="lg:col-span-7 flex flex-col">
+                        <!-- Card: NEWS BOX -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-full select-none">
+                            <div class="flex justify-between items-center mb-6">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary text-[20px]">feed</span>
+                                    <span class="text-label-sm font-bold uppercase tracking-wider text-white">Tech Layoffs & Jobs Feed</span>
+                                </div>
+                                <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                            </div>
+
+                            <!-- News feed list -->
+                            <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-1" id="newsFeedList">
+                                <!-- Dynamically loaded via API -->
+                                <p class="text-label-sm font-light text-on-surface-variant p-4">Fetching current technology news feed...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Emerging Companies Spotlight (Col span 5) -->
+                    <div class="lg:col-span-5 flex flex-col">
+                        <!-- Card: COMPANIES SPOTLIGHT -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-full select-none">
+                            <div class="flex justify-between items-center mb-6">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-secondary text-[20px]">stars</span>
+                                    <span class="text-label-sm font-bold uppercase tracking-wider text-white">Emerging Startups spotlight</span>
+                                </div>
+                                <span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">more_horiz</span>
+                            </div>
+
+                            <!-- Curated Startups list -->
+                            <div class="flex-1 flex flex-col justify-between py-1 gap-4">
+                                <!-- Startup 1: Linear -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-white text-[18px]">L</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Linear</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: TypeScript, Node, React</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$35M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
+                                </div>
+
+                                <!-- Startup 2: Supabase -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-primary text-[18px] font-mono">⚡</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Supabase</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: PostgreSQL, Go, TypeScript</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$80M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
+                                </div>
+
+                                <!-- Startup 3: NeonDB -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-[#a3e635] text-[16px]">N</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Neon Database</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: PostgreSQL, Rust, Cloud</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$50M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
+                                </div>
+
+                                <!-- Startup 4: Vercel -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-white text-[16px]">▲</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Vercel</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: Next.js, React, Node</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$150M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: Detailed Career & ATS Guides (Things to read about) -->
+                <div>
+                    <h3 class="text-headline-md font-headline-md mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                        <span>Expert Career & ATS Guides</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <!-- Guide 1 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
+                                    <span class="material-symbols-outlined">robot</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">ATS Mastery: Demystifying the Robot Screener</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Understand how Applicant Tracking Systems parse and index candidate skills. Learn structural layout heuristics, font selection rules, and exact keyword target mapping practices to bypass automatic screening filters and secure human reviews.</p>
+                            </div>
+                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 2 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-4 group-hover:bg-secondary/20 transition-all">
+                                    <span class="material-symbols-outlined">analytics</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-secondary transition-colors">The Wording Formula: Metrics & Action Verbs</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Ditch passive phrasing like "responsible for" or "helped". Adopt the Google X-Y-Z formula: "Accomplished [X] as measured by [Y], by doing [Z]". Master a list of high-impact action verbs that instantly convey technical ownership and quantitative impact.</p>
+                            </div>
+                            <span class="text-[11px] text-secondary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 3 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
+                                    <span class="material-symbols-outlined">terminal</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">AI Interview Prep: Navigating Code Screeners</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Prepare for modern automated coding interviews. Discover how automated evaluation agents grade algorithmic syntax, complexity profiles, and explainability. Learn best practice tips for vocalizing code structures and structuring clean solutions.</p>
+                            </div>
+                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 4 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white mb-4 group-hover:bg-white/10 transition-all">
+                                    <span class="material-symbols-outlined">rocket_launch</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-white/80 transition-colors">Finding Funded Startups Before They Post</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Discover early-stage startups that have closed funding rounds but haven't heavily broadcasted job openings. Uncover active venture capital database hacks, read startup crunch statistics, and craft cold outreach pitches directly targeting engineering managers.</p>
+                            </div>
+                            <span class="text-[11px] text-white font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Raw Text Debug Modal -->
+    <div id="debugModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="glass-card w-[90%] max-w-2xl rounded-xl p-6 flex flex-col max-h-[80%]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-headline-md font-headline-md text-primary">Raw Extracted Text Debugger</h3>
+                <button onclick="toggleDebug()" class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="bg-surface-container-lowest/80 border border-outline-variant/30 rounded-lg p-4 font-mono text-xs overflow-y-auto flex-1 select-all" id="rawTextContent">
+                No active scan data loaded. Run a critique to inspect raw extracted text parser content.
+            </div>
         </div>
     </div>
 
-    <style>
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
+    <!-- Support Contact Modal -->
+    <div id="supportModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="glass-card w-[90%] max-w-md rounded-2xl p-8 flex flex-col relative">
+            <button onclick="toggleSupportModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+            
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[28px]">support_agent</span>
+                </div>
+                <div>
+                    <h3 class="text-headline-md font-headline-md text-white">Contact Support</h3>
+                    <p class="text-label-sm text-on-surface-variant font-light">We're here to help</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <!-- Email -->
+                <div class="flex items-center gap-4 p-4 rounded-xl bg-[#0c0c0c]/60 border border-white/[0.06]">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-primary text-[20px]">mail</span>
+                    </div>
+                    <div>
+                        <span class="text-label-sm text-on-surface-variant font-light block">Email</span>
+                        <a href="mailto:support@scope.app" class="text-body-md font-semibold text-white hover:text-primary transition-colors">support@scope.app</a>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="flex items-center gap-4 p-4 rounded-xl bg-[#0c0c0c]/60 border border-white/[0.06]">
+                    <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-secondary text-[20px]">call</span>
+                    </div>
+                    <div>
+                        <span class="text-label-sm text-on-surface-variant font-light block">Phone</span>
+                        <a href="tel:+1234567890" class="text-body-md font-semibold text-white hover:text-secondary transition-colors">+1 (234) 567-890</a>
+                    </div>
+                </div>
+
+                <!-- Hours -->
+                <div class="flex items-center gap-4 p-4 rounded-xl bg-[#0c0c0c]/60 border border-white/[0.06]">
+                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-white text-[20px]">schedule</span>
+                    </div>
+                    <div>
+                        <span class="text-label-sm text-on-surface-variant font-light block">Hours</span>
+                        <span class="text-body-md font-semibold text-white">Mon – Fri, 9 AM – 6 PM IST</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-on-surface-variant font-light text-center mt-6">Scope is an open-source local-first tool. All data stays on your machine.</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let activeScanData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file-input');
+            const btnCritique = document.getElementById('btn-critique');
+            const sidebar = document.getElementById('sidebar');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+
+            // View States
+            const states = {
+                UPLOAD: document.getElementById('state-upload'),
+                LOADING: document.getElementById('state-loading'),
+                RESULTS: document.getElementById('state-results')
+            };
+
+            // Setup Navigation button glow
+            btnCritique.addEventListener('mousemove', (e) => {
+                const rect = btnCritique.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                btnCritique.style.setProperty('--x', `${x}px`);
+                btnCritique.style.setProperty('--y', `${y}px`);
+            });
+
+            // Dynamic Cursor Spotlight
+            const cursorGlow = document.getElementById('cursor-glow');
+            document.addEventListener('mousemove', (e) => {
+                const x = e.clientX;
+                const y = e.clientY + window.scrollY;
+                
+                cursorGlow.style.opacity = '0.07';
+                cursorGlow.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`;
+            });
+
+            // Sidebar Collapse toggling
+            if(toggleSidebarBtn && sidebar) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                    // Automatically collapse history drawer Pane 2 if vertical Pane 1 is collapsed
+                    const drawer = document.getElementById('history-drawer');
+                    if (sidebar.classList.contains('sidebar-collapsed')) {
+                        drawer.classList.add('drawer-collapsed');
+                    }
+                });
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            // File selection event bindings
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelection(e.target.files[0]);
+                }
+            });
+
+            // Drag and Drop event listeners
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => {
+                    dropzone.classList.add('dropzone-active');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => {
+                    dropzone.classList.remove('dropzone-active');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+
+            // Initialize App
+            renderHistorySidebar();
+            loadLastScan();
+        });
+
+        // Fetch live technology startups & layoffs news feed from FastAPI backend
+        function fetchMarketNews() {
+            const list = document.getElementById('newsFeedList');
+            if (!list) return;
+
+            fetch('http://127.0.0.1:8000/api/news')
+                .then(res => {
+                    if (!res.ok) throw new Error("API issue");
+                    return res.json();
+                })
+                .then(data => {
+                    list.innerHTML = "";
+                    if (data.length === 0) {
+                        list.innerHTML = `<p class="text-label-sm font-light text-on-surface-variant p-4">No recent articles found.</p>`;
+                        return;
+                    }
+                    data.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = "border border-[#1c1c1c] bg-[#0c0c0c] hover:bg-[#141414] p-4 rounded-xl transition-all flex flex-col gap-1.5 relative overflow-hidden group cursor-pointer";
+                        
+                        // Select indicator stripe color based on category tag
+                        let stripeColor = 'bg-primary'; // default Pistachio-Lime
+                        let textColorClass = 'text-primary';
+                        if (item.category === 'Layoffs Track') {
+                            stripeColor = 'bg-error'; // Red
+                            textColorClass = 'text-error';
+                        } else if (item.category === 'Funding Rounds') {
+                            stripeColor = 'bg-secondary'; // Orange
+                            textColorClass = 'text-secondary';
+                        } else if (item.category === 'Job Market') {
+                            stripeColor = 'bg-white'; // White
+                            textColorClass = 'text-white';
+                        }
+
+                        // Parse and format pubDate cleanly
+                        let formattedDate = item.pubDate;
+                        try {
+                            const d = new Date(item.pubDate);
+                            formattedDate = d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        } catch(e) {}
+
+                        row.innerHTML = `
+                            <span class="absolute top-0 left-0 w-1 h-full ${stripeColor}"></span>
+                            <div class="flex justify-between items-center text-[10px] uppercase font-bold text-on-surface-variant">
+                                <span class="${textColorClass}">${item.category}</span>
+                                <span>${formattedDate}</span>
+                            </div>
+                            <h4 class="text-body-md font-semibold text-white group-hover:text-primary transition-colors leading-snug">${item.title}</h4>
+                            <p class="text-[12px] text-on-surface-variant leading-relaxed font-light">${item.description}</p>
+                        `;
+
+                        row.onclick = () => {
+                            window.open(item.link, '_blank');
+                        };
+
+                        list.appendChild(row);
+                    });
+                })
+                .catch(err => {
+                    console.error("Failed to load live news:", err);
+                    list.innerHTML = `<p class="text-label-sm font-light text-error p-4">Unable to fetch current tech news. Verify backend server is running.</p>`;
+                });
+        }
+
+        // Toggle state view layers
+        function transitionTo(newStateKey) {
+            const states = {
+                UPLOAD: document.getElementById('state-upload'),
+                LOADING: document.getElementById('state-loading'),
+                RESULTS: document.getElementById('state-results'),
+                PULSE: document.getElementById('state-market-pulse')
+            };
+
+            Object.values(states).forEach(state => {
+                if (state) state.classList.add('view-hidden');
+            });
+
+            const newState = states[newStateKey];
+            if (newState) newState.classList.remove('view-hidden');
+
+            // Update navbar tab highlights
+            const tabUpload = document.getElementById('nav-tab-upload');
+            const tabPulse = document.getElementById('nav-tab-pulse');
+            
+            if (tabUpload && tabPulse) {
+                // Reset classes
+                [tabUpload, tabPulse].forEach(tab => {
+                    tab.className = "flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40";
+                });
+                
+                // Highlight active
+                if (newStateKey === 'UPLOAD' || newStateKey === 'RESULTS' || newStateKey === 'LOADING') {
+                    tabUpload.className = "flex items-center gap-2 bg-[#1c1c1c]/90 border border-[#2b2b2b]/60 text-white px-4 py-1.5 rounded-full text-label-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer select-none";
+                } else if (newStateKey === 'PULSE') {
+                    tabPulse.className = "flex items-center gap-2 bg-[#1c1c1c]/90 border border-[#2b2b2b]/60 text-white px-4 py-1.5 rounded-full text-label-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer select-none";
+                    fetchMarketNews();
+                }
             }
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                scale: 0.95;
-            }
-
-            to {
-                opacity: 1;
-                scale: 1;
+        // Help transition cleanly between UPLOAD and RESULTS depending on scan details
+        function transitionToUploadOrResults() {
+            if (activeScanData) {
+                transitionTo('RESULTS');
+            } else {
+                transitionTo('UPLOAD');
             }
         }
-    </style>
 
-    <script src="script.js"></script>
+        // Handle selected file details
+        function handleFileSelection(file) {
+            selectedFile = file;
+            
+            // Get file extension for icon
+            const ext = file.name.split('.').pop().toLowerCase();
+            const iconMap = { pdf: 'picture_as_pdf', doc: 'description', docx: 'description', txt: 'article', png: 'image', jpg: 'image', jpeg: 'image', webp: 'image' };
+            const icon = iconMap[ext] || 'description';
+            
+            // Show preview, hide prompt
+            const prompt = document.getElementById('dropzone-prompt');
+            const preview = document.getElementById('dropzone-preview');
+            const previewIcon = document.getElementById('preview-icon');
+            const previewName = document.getElementById('preview-name');
+            const previewSize = document.getElementById('preview-size');
+            const dropzone = document.getElementById('dropzone');
+            
+            previewIcon.textContent = icon;
+            previewName.textContent = file.name;
+            previewSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+            
+            prompt.classList.add('hidden');
+            preview.classList.remove('hidden');
+            dropzone.classList.remove('border-outline-variant/40');
+            dropzone.classList.add('border-primary/40');
+        }
+        
+        // Remove selected file and restore dropzone
+        function removeSelectedFile() {
+            selectedFile = null;
+            const prompt = document.getElementById('dropzone-prompt');
+            const preview = document.getElementById('dropzone-preview');
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file-input');
+            
+            preview.classList.add('hidden');
+            prompt.classList.remove('hidden');
+            dropzone.classList.remove('border-primary/40');
+            dropzone.classList.add('border-outline-variant/40');
+            fileInput.value = '';
+        }
+
+        // Perform main analysis API request
+        async function triggerAnalysis() {
+            if (!selectedFile) {
+                alert("Please drop or browse a resume file first!");
+                return;
+            }
+
+            const jdInput = document.getElementById('jd-input');
+            const loadingText = document.getElementById('loading-text');
+
+            transitionTo('LOADING');
+
+            // Cycle loading status text
+            const statuses = ["⚙️ Extracting Text...", "🧠 DeepSeek-R1 is thinking...", "⚖️ Evaluating ATS Scoring Rules..."];
+            let statusIndex = 0;
+            loadingText.textContent = statuses[0];
+            const statusInterval = setInterval(() => {
+                statusIndex = (statusIndex + 1) % statuses.length;
+                loadingText.textContent = statuses[statusIndex];
+            }, 2500);
+
+            // Assemble payload
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            const jdText = jdInput ? jdInput.value.trim() : "";
+            if (jdText) {
+                formData.append("job_description", jdText);
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || "Server analysis error occurred.");
+                }
+
+                const data = await response.json();
+
+                clearInterval(statusInterval);
+                activeScanData = data;
+                
+                // Store results
+                saveToHistory(data);
+                
+                // Transition & Render
+                transitionTo('RESULTS');
+                renderResults(data);
+                renderHistorySidebar();
+
+            } catch (e) {
+                clearInterval(statusInterval);
+                console.error(e);
+                alert(`Analysis Failed: ${e.message}\nEnsure uvicorn backend and LM Studio Local Server are running!`);
+                transitionTo('UPLOAD');
+            }
+        }
+
+        // Toggle Slide-out Pane 2 Scan History Drawer
+        function toggleHistoryDrawer() {
+            const drawer = document.getElementById('history-drawer');
+            if (drawer) {
+                drawer.classList.toggle('drawer-collapsed');
+            }
+        }
+
+        // Toggle Support Contact Modal
+        function toggleSupportModal() {
+            const modal = document.getElementById('supportModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Dynamic results populate
+        function renderResults(data) {
+            document.getElementById('res-name').textContent = data.candidate_name || "Candidate";
+            document.getElementById('res-summary').textContent = data.summary || "Summary details are empty.";
+
+            // Dynamic dashboard header candidate profile name
+            const candidateName = data.candidate_name || "Aryan";
+            document.getElementById('dashboard-title').textContent = `${candidateName}'s Dashboard`;
+
+            // Calculate realistic readability rating bound by candidate score
+            const score = data.overall_score || 0;
+            const readability = Math.max(60, Math.min(96, Math.round(75 + (score - 60) * 0.3)));
+            
+            // Dynamic text updates for metrics cards
+            document.getElementById('ats-score-badge').textContent = score + "%";
+            document.getElementById('ats-readability-badge').textContent = readability + "%";
+
+            // Keywords stats calculator
+            const strengthsCount = data.strengths ? data.strengths.length : 0;
+            const gapsCount = data.weaknesses ? data.weaknesses.length : 0;
+            const totalKeywords = 420 + (strengthsCount * 12) + (gapsCount * 8);
+            document.getElementById('matrix-total-label').textContent = `Total Keywords: ${totalKeywords}`;
+
+            // Timeline total suggestions count
+            const improvementsCount = data.improvements ? data.improvements.length : 0;
+            document.getElementById('timeline-total-label').textContent = `Suggestions: ${improvementsCount}`;
+
+            // Render Strengths
+            const strengthsCont = document.getElementById('res-strengths');
+            strengthsCont.innerHTML = "";
+            if (data.strengths && data.strengths.length > 0) {
+                data.strengths.forEach(str => {
+                    const pill = document.createElement('span');
+                    pill.className = "px-3 py-1 bg-emerald-400/15 text-emerald-200 text-label-sm font-label-sm rounded-full border border-emerald-400/20";
+                    pill.textContent = str.replace("✅", "").trim();
+                    strengthsCont.appendChild(pill);
+                });
+            } else {
+                strengthsCont.innerHTML = `<span class="text-on-surface-variant text-label-sm font-light">No outstanding strengths noted.</span>`;
+            }
+
+            // Render Weaknesses / Missing keywords
+            const weaknessesCont = document.getElementById('res-weaknesses');
+            weaknessesCont.innerHTML = "";
+            if (data.weaknesses && data.weaknesses.length > 0) {
+                data.weaknesses.forEach(weak => {
+                    const pill = document.createElement('span');
+                    pill.className = "px-3 py-1 bg-error/15 text-error text-label-sm font-label-sm rounded-full border border-error/20";
+                    pill.textContent = weak.replace("MISSING:", "").replace("❌", "").trim();
+                    weaknessesCont.appendChild(pill);
+                });
+            } else {
+                weaknessesCont.innerHTML = `<span class="text-on-surface-variant text-label-sm font-light">No critical missing keywords found.</span>`;
+            }
+
+            // Render Improvements/Bullet optimization list
+            const improvementsCont = document.getElementById('res-improvements');
+            improvementsCont.innerHTML = "";
+            if (data.improvements && data.improvements.length > 0) {
+                data.improvements.forEach(imp => {
+                    const original = imp.original || "";
+                    const better = imp.better || imp;
+                    const why = imp.why || "";
+
+                    const row = document.createElement('div');
+                    row.className = "grid grid-cols-1 md:grid-cols-12 gap-0 rounded-[24px] overflow-hidden border border-outline-variant/20 bg-[#121212] shadow-lg stagger-item";
+
+                    if (!original) {
+                        // Tips card (Full width)
+                        row.innerHTML = `
+                            <div class="md:col-span-12 p-6 bg-[#121212]/90">
+                                <div class="text-[11px] font-bold text-primary uppercase tracking-wider mb-2">General Recommendation</div>
+                                <p class="text-body-md font-medium text-white mb-2">${better}</p>
+                                ${why ? `<p class="text-label-sm font-light text-on-surface-variant mt-2 pt-2 border-t border-outline-variant/10"><strong class="text-on-surface">Why:</strong> ${why}</p>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        // Original vs Rewrite side-by-side comparison card (cohesive visual design)
+                        row.innerHTML = `
+                            <!-- Left Column: Original Phrasing (Dark slate background) -->
+                            <div class="md:col-span-5 bg-[#0a0a0a]/60 p-6 opacity-85 flex flex-col justify-between border-b md:border-b-0 md:border-r border-outline-variant/20">
+                                <div>
+                                    <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-3">Original Phrasing</div>
+                                    <p class="text-body-md text-on-surface-variant/80 line-through decoration-error/50">"${original}"</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Optimized Rewrite (Seamless fit, Pistachio accent tint glow) -->
+                            <div class="md:col-span-7 p-6 relative overflow-hidden bg-[#121212]/90 flex flex-col justify-between">
+                                <div class="absolute inset-0 bg-primary/[0.03] pointer-events-none"></div>
+                                <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/[0.08] to-transparent pointer-events-none"></div>
+                                
+                                <div class="relative z-10 flex flex-col h-full justify-between gap-4">
+                                    <div>
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div class="text-[11px] font-bold text-primary uppercase tracking-wider">Optimized Rewrite</div>
+                                            <button onclick="navigator.clipboard.writeText(this.getAttribute('data-text')); alert('Copied suggestions to clipboard!');" data-text="${better.replace(/"/g, '&quot;')}" class="text-[11px] font-bold text-primary hover:text-primary-fixed bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 transition-all hover:bg-primary/25 cursor-pointer">Copy</button>
+                                        </div>
+                                        <p class="text-body-md font-semibold text-white">"${better}"</p>
+                                    </div>
+                                    <div class="mt-2 pt-3 border-t border-outline-variant/10">
+                                        <p class="text-label-sm text-on-surface-variant leading-relaxed"><strong class="text-on-surface font-semibold">Rationale:</strong> ${why}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    improvementsCont.appendChild(row);
+                });
+            } else {
+                improvementsCont.innerHTML = `<p class="text-on-surface-variant font-light">No improvements suggestions generated.</p>`;
+            }
+
+            // Animate dynamic dashboard counts
+            setTimeout(() => {
+                animateScore(data.overall_score || 0);
+            }, 300);
+        }
+
+        // Count-up animations for dashboard score indicators and dynamic, reactive sparklines
+        function animateScore(score) {
+            const atsBadge = document.getElementById('ats-score-badge');
+            const readabilityBadge = document.getElementById('ats-readability-badge');
+            
+            // Sparkline elements
+            const atsArea = document.getElementById('ats-sparkline-area');
+            const atsLine = document.getElementById('ats-sparkline-line');
+            const readArea = document.getElementById('readability-sparkline-area');
+            const readLine = document.getElementById('readability-sparkline-line');
+            
+            if (!atsBadge || !readabilityBadge) return;
+            
+            const readability = Math.max(60, Math.min(96, Math.round(75 + (score - 60) * 0.3)));
+            
+            let currentAts = 0;
+            let currentRead = 0;
+            const duration = 1200;
+            const interval = 20;
+            const steps = duration / interval;
+            
+            const atsIncrement = score / steps;
+            const readIncrement = readability / steps;
+
+            const animationTimer = setInterval(() => {
+                currentAts += atsIncrement;
+                currentRead += readIncrement;
+                
+                if (currentAts >= score) {
+                    currentAts = score;
+                    currentRead = readability;
+                    clearInterval(animationTimer);
+                }
+                
+                atsBadge.textContent = Math.floor(currentAts) + "%";
+                readabilityBadge.textContent = Math.floor(currentRead) + "%";
+                
+                // Update sparkline paths dynamically to make them reactive & complete
+                if (atsLine && atsArea) {
+                    // Taper to baseline (y = 60) at both edges: 0 and 300
+                    const y1_ats = 60 - (currentAts * 0.7);
+                    const y2_ats = 60 - (currentAts * 0.3);
+                    atsLine.setAttribute('d', `M 0,60 Q 75,${y1_ats} 150,${y2_ats} T 300,60`);
+                    atsArea.setAttribute('d', `M 0,60 Q 75,${y1_ats} 150,${y2_ats} T 300,60 L 300,70 L 0,70 Z`);
+                }
+                
+                if (readLine && readArea) {
+                    // Offset phase to cross lines organically, tapering to 60 at edges
+                    const y1_read = 60 - (currentRead * 0.3);
+                    const y2_read = 60 - (currentRead * 0.7);
+                    readLine.setAttribute('d', `M 0,60 Q 100,${y1_read} 200,${y2_read} T 300,60`);
+                    readArea.setAttribute('d', `M 0,60 Q 100,${y1_read} 200,${y2_read} T 300,60 L 300,70 L 0,70 Z`);
+                }
+            }, interval);
+        }
+
+        // Save scan history details locally
+        function saveToHistory(data) {
+            let history = JSON.parse(localStorage.getItem("critiqueHistory") || "[]");
+
+            const item = {
+                id: Date.now(),
+                name: data.candidate_name || "Unknown",
+                score: data.overall_score || 0,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                full: data
+            };
+
+            history.unshift(item);
+            if(history.length > 8) history.pop();
+
+            localStorage.setItem("critiqueHistory", JSON.stringify(history));
+            localStorage.setItem("latestCritiqueScan", JSON.stringify(data));
+        }
+
+        // Render Sidebar List
+        function renderHistorySidebar() {
+            const list = document.getElementById('historyList');
+            if(!list) return;
+
+            let history = JSON.parse(localStorage.getItem("critiqueHistory") || "[]");
+            list.innerHTML = "";
+
+            if(history.length === 0) {
+                list.innerHTML = `<p class="text-label-sm font-light text-on-surface-variant p-2 sidebar-header-text">No previous scans found.</p>`;
+                return;
+            }
+
+            history.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "history-item bg-surface-container/30 border-l-4 border-transparent p-3 rounded-r-lg flex flex-col gap-1";
+                
+                let scoreColor = '#ef4444';
+                if(item.score >= 90) scoreColor = '#10b981';
+                else if(item.score >= 70) scoreColor = '#f59e0b';
+                else if(item.score >= 40) scoreColor = '#f97316';
+
+                row.innerHTML = `
+                    <div class="text-label-md font-semibold text-on-surface truncate">${item.name}</div>
+                    <div class="flex justify-between items-center text-label-sm font-light text-on-surface-variant">
+                        <span>${item.timestamp}</span>
+                        <span style="color: ${scoreColor}" class="font-bold">${item.score}/100</span>
+                    </div>
+                `;
+
+                row.onclick = () => {
+                    activeScanData = item.full;
+                    localStorage.setItem("latestCritiqueScan", JSON.stringify(item.full));
+                    transitionTo('RESULTS');
+                    renderResults(item.full);
+                };
+
+                list.appendChild(row);
+            });
+        }
+
+        // Load latest scan on launch if exists
+        function loadLastScan() {
+            const latest = localStorage.getItem("latestCritiqueScan");
+            if (latest) {
+                const data = JSON.parse(latest);
+                activeScanData = data;
+                transitionTo('RESULTS');
+                renderResults(data);
+            } else {
+                transitionTo('UPLOAD');
+            }
+        }
+
+        // Reset to home upload panel
+        function resetToUpload() {
+            removeSelectedFile();
+            transitionTo('UPLOAD');
+        }
+
+        // PDF download utility
+        function downloadReport() {
+            if(!activeScanData) return;
+            const element = document.querySelector('.pdf-export-container');
+            const name = activeScanData.candidate_name || "Resume_Analysis";
+
+            const config = {
+                margin: [0.5, 0.5],
+                filename: `${name}_Resume_Critique.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f0d13', useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Trigger beautiful PDF rendering
+            html2pdf().set(config).from(element).save();
+        }
+
+        // Toggle debug modal view
+        function toggleDebug() {
+            const modal = document.getElementById('debugModal');
+            const rawText = document.getElementById('rawTextContent');
+
+            if (modal.classList.contains('hidden')) {
+                const currentData = activeScanData || JSON.parse(localStorage.getItem("latestCritiqueScan") || "{}");
+                rawText.textContent = currentData.raw_text || "No active scan data found. Run a new critique to inspect raw parsed content.";
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Clear Local Storage history
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear your local resume scan history?")) {
+                localStorage.removeItem("critiqueHistory");
+                localStorage.removeItem("latestCritiqueScan");
+                activeScanData = null;
+                renderHistorySidebar();
+                resetToUpload();
+            }
+        }
+
+        // Interactive 3D Cursor Parallax for Loading Screen
+        document.addEventListener('mousemove', (e) => {
+            const loadingView = document.getElementById('state-loading');
+            if (!loadingView || loadingView.classList.contains('view-hidden')) return;
+            
+            const container = document.getElementById('loading-interactive-container');
+            const core = document.getElementById('loading-core');
+            const particles = document.querySelectorAll('.ambient-particle');
+            
+            if (!container || !core) return;
+            
+            // Calculate screen-relative coordinate deltas (-1 to +1)
+            const dx = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+            const dy = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+            
+            // Apply coordinates as 3D offsets with lag-free transition easing
+            container.style.transform = `translate3d(${dx * 22}px, ${dy * 22}px, 0)`;
+            core.style.transform = `translate3d(${dx * -10}px, ${dy * -10}px, 0) rotateX(${dy * -15}deg) rotateY(${dx * 15}deg)`;
+            
+            // Background particles shift in reverse to intensify 3D parallax depth
+            particles.forEach((part, idx) => {
+                const speed = 15 + (idx % 4) * 8; // varying depth speeds
+                part.style.transform = `translate3d(${dx * -speed}px, ${dy * -speed}px, 0)`;
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // ORGANIC DRIFT STARFIELD — Repulsion-based particle system
+        // Particles float on sine-wave paths, scatter from cursor
+        // ═══════════════════════════════════════════════════════════
+        (function() {
+            const canvas = document.getElementById('constellation-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const COUNT = 90;
+            const CONNECT_DIST = 120;
+            const MOUSE_RADIUS = 180;
+            const REPULSE_FORCE = 8;
+
+            const COLORS = [
+                { r: 163, g: 230, b: 53 },
+                { r: 251, g: 146, b: 60 },
+                { r: 255, g: 255, b: 255 },
+            ];
+
+            let mouse = { x: -9999, y: -9999 };
+            let particles = [];
+            let W, H;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.originX = this.x;
+                    this.originY = this.y;
+                    // Slow organic base velocity
+                    this.baseVx = (Math.random() - 0.5) * 0.3;
+                    this.baseVy = (Math.random() - 0.5) * 0.3;
+                    // Displacement from mouse repulsion
+                    this.dx = 0;
+                    this.dy = 0;
+                    // Sine drift parameters (unique per particle)
+                    this.sinAmpX = Math.random() * 30 + 10;
+                    this.sinAmpY = Math.random() * 25 + 10;
+                    this.sinFreqX = Math.random() * 0.003 + 0.001;
+                    this.sinFreqY = Math.random() * 0.003 + 0.001;
+                    this.sinOffsetX = Math.random() * 1000;
+                    this.sinOffsetY = Math.random() * 1000;
+                    this.t = Math.random() * 10000;
+
+                    this.radius = Math.random() * 1.6 + 0.5;
+                    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    this.alpha = Math.random() * 0.4 + 0.15;
+                    this.baseAlpha = this.alpha;
+                }
+
+                update(time) {
+                    this.t += 1;
+
+                    // Organic sine-wave drift path
+                    this.originX += this.baseVx;
+                    this.originY += this.baseVy;
+
+                    const targetX = this.originX + Math.sin(this.t * this.sinFreqX + this.sinOffsetX) * this.sinAmpX;
+                    const targetY = this.originY + Math.cos(this.t * this.sinFreqY + this.sinOffsetY) * this.sinAmpY;
+
+                    // Mouse repulsion — push AWAY
+                    const mdx = targetX - mouse.x;
+                    const mdy = targetY - mouse.y;
+                    const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+
+                    if (mDist < MOUSE_RADIUS && mDist > 1) {
+                        const force = (MOUSE_RADIUS - mDist) / MOUSE_RADIUS;
+                        this.dx += (mdx / mDist) * force * REPULSE_FORCE;
+                        this.dy += (mdy / mDist) * force * REPULSE_FORCE;
+                        // Brighten when pushed
+                        this.alpha = Math.min(0.9, this.baseAlpha + force * 0.5);
+                    } else {
+                        this.alpha += (this.baseAlpha - this.alpha) * 0.03;
+                    }
+
+                    // Spring back displacement smoothly
+                    this.dx *= 0.92;
+                    this.dy *= 0.92;
+
+                    this.x = targetX + this.dx;
+                    this.y = targetY + this.dy;
+
+                    // Wrap edges — reset origin when out of bounds
+                    if (this.originX < -60) this.originX = W + 50;
+                    if (this.originX > W + 60) this.originX = -50;
+                    if (this.originY < -60) this.originY = H + 50;
+                    if (this.originY > H + 60) this.originY = -50;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.alpha})`;
+                    ctx.fill();
+
+                    // Subtle glow halo
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.alpha * 0.07})`;
+                    ctx.fill();
+                }
+            }
+
+            function init() {
+                particles = [];
+                for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+            }
+
+            function drawLines() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < CONNECT_DIST) {
+                            const a = (1 - d / CONNECT_DIST) * 0.1;
+                            const c1 = particles[i].color, c2 = particles[j].color;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(${(c1.r+c2.r)>>1},${(c1.g+c2.g)>>1},${(c1.b+c2.b)>>1},${a})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, W, H);
+                drawLines();
+                for (const p of particles) { p.update(); p.draw(); }
+                requestAnimationFrame(loop);
+            }
+
+            document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            document.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+            window.addEventListener('resize', () => { resize(); init(); });
+
+            resize();
+            init();
+            loop();
+        })();
+
+    </script>
 </body>
-
 </html>
