@@ -6,24 +6,19 @@ LM_STUDIO_BASE_URL = "http://localhost:1234/v1"
 DEFAULT_MODEL = "meta-llama-3.1-8b-instruct"
 
 BASE_SYSTEM_PROMPT = """
-You are a strict ATS-style Technical Recruiter and Resume Critique Expert.
+You are an elite, ruthlessly analytical, executive-level technical recruiter and principal ATS (Applicant Tracking System) engineer.
+Your purpose is to critique technical resumes with surgical precision, applying the highest global standards of Fortune 100 engineering teams.
 
-Your behavior rules:
-- Evaluate resumes ruthlessly, not politely.
-- Avoid average or safe scoring.
-- Use the FULL 1–100 scoring range.
-- Weak resumes MUST receive very low scores.
-- Exceptional resumes MUST receive very high scores.
+Your core operational directives:
+1. Ruin mediocrity. Never provide generic, polite, or patronizing encouragement. Be severe, objective, and deeply analytical.
+2. Rate resumes strictly using the full 1-100 score range. Do not bundle scores around safe averages (50-70). A poorly optimized or low-impact resume must be scored aggressively low (e.g., 20-45).
+3. Evaluate resumes from a double perspective:
+   - The ATS Parser: Assess document readability, layout compatibility, hierarchical syntax, and keyword-density index.
+   - The Principal Recruiter: Assess deep business impact, technical ownership, system complexity, and wording maturity.
+4. Enforce the Google X-Y-Z formula: "Accomplished [X] as measured by [Y], by doing [Z]" for all bullet points. Bullet points lacking quantitative metrics (percentages, dollars, hours saved, scale parameters) are considered major vulnerabilities.
+5. Ensure candidate name extraction is flawless. Under no circumstances should you hallucinate, make up names, or use generic placeholders like "Candidate" or "Unknown" if a valid name can be extracted.
 
-You must:
-1. Evaluate resumes holistically (skills, projects, impact, wording).
-2. Think like an ATS + a senior recruiter.
-3. Always provide actionable feedback.
-4. Always suggest improved bullet point rewrites.
-5. Always produce a professional summary.
-
-Output ONLY valid JSON matching the provided schema.
-Do NOT include explanations outside JSON.
+Output ONLY a JSON payload conforming exactly to the requested JSON schema. Do not output markdown fences or explanatory text outside of the JSON payload.
 """
 
 def clean_json_text(text: str) -> str:
@@ -35,6 +30,77 @@ def clean_json_text(text: str) -> str:
         return text[start:end]
     return text
 
+def extract_candidate_name_from_text(resume_text: str) -> str:
+    if not resume_text:
+        return ""
+    lines = [l.strip() for l in resume_text.split('\n') if l.strip()]
+    for line in lines[:5]:
+        # clean the line of common markdown/text symbols
+        clean_line = line.strip('*_#-"\'•●o- ')
+        if not clean_line:
+            continue
+        clean_line_lower = clean_line.lower()
+        
+        # Check line length (names are rarely > 35 chars or < 3 chars)
+        if len(clean_line) < 3 or len(clean_line) > 35:
+            continue
+            
+        # Must contain alphabetic characters
+        if not any(c.isalpha() for c in clean_line):
+            continue
+            
+        # Exclude lines that contain emails, phone numbers, website indicators, or resume header/section words
+        keywords = [
+            'resume', 'cv', 'curriculum', 'contact', 'email', 'phone', '@', 'http', 'www', '+', 
+            'objective', 'summary', 'page', 'address', 'portfolio', 'github', 'linkedin', 
+            'experience', 'education', 'skills', 'profile', 'about', 'work', 'history'
+        ]
+        if any(x in clean_line_lower for x in keywords):
+            continue
+        
+        # If we passed all checks, this is a very strong candidate for a name!
+        return clean_line
+    return ""
+
+def check_is_resume_heuristically(text: str) -> bool:
+    if not text:
+        return False
+    txt_lower = text.lower()
+    
+    # 1. Look for standard resume headings/keywords
+    resume_keywords = [
+        "experience", "education", "skills", "projects", "employment", 
+        "career", "university", "school", "technologies", "certificate", 
+        "summary", "work history", "contact", "email", "phone", "profile"
+    ]
+    matches = sum(1 for kw in resume_keywords if kw in txt_lower)
+    
+    # 2. Look for programming/coding file markers
+    code_markers = [
+        "import ", "def ", "class ", "function ", "const ", "let ", 
+        "public class", "public void", "void main", "using namespace",
+        "<html>", "dockerfile", "pip install", "npm install", "api_key"
+    ]
+    code_matches = sum(1 for marker in code_markers if marker in txt_lower)
+    
+    # Heuristic rules:
+    # If we have code markers and very few resume keywords, it's likely code
+    if code_matches > 3 and matches < 2:
+        return False
+        
+    # If it is extremely short (< 150 characters), it's not a resume
+    if len(text.strip()) < 150:
+        return False
+        
+    # If it contains zero resume keywords, it's highly unlikely to be a resume
+    if matches == 0:
+        # Check if it has an email or phone number which might be a minimal contact card/resume
+        has_contact = bool(re.search(r'[\w\.-]+@[\w\.-]+', text)) or bool(re.search(r'\+?\d{10,12}', text))
+        if not has_contact:
+            return False
+            
+    return True
+
 async def critique_resume(parsed_data, job_description=None):
     # Determine the model to use dynamically from LM Studio
     model_to_use = DEFAULT_MODEL
@@ -45,15 +111,15 @@ async def critique_resume(parsed_data, job_description=None):
                 models_data = response.json()
                 if "data" in models_data and len(models_data["data"]) > 0:
                     model_to_use = models_data["data"][0]["id"]
-                    print(f"🤖 Found loaded model in LM Studio: '{model_to_use}'")
+                    print(f"[INFO] Found loaded model in LM Studio: '{model_to_use}'")
                 else:
-                    print(f"⚠️ No active models found in LM Studio. Will attempt default model: '{model_to_use}'")
+                    print(f"[WARN] No active models found in LM Studio. Will attempt default model: '{model_to_use}'")
             else:
-                print(f"⚠️ LM Studio returned status code {response.status_code}. Using default model: '{model_to_use}'")
+                print(f"[WARN] LM Studio returned status code {response.status_code}. Using default model: '{model_to_use}'")
     except Exception as list_err:
-        print(f"⚠️ Failed to list LM Studio models: {list_err}. Proceeding with default model '{model_to_use}'.")
+        print(f"[WARN] Failed to list LM Studio models: {list_err}. Proceeding with default model '{model_to_use}'.")
 
-    print(f"🤖 (Local AI via LM Studio) Analyzing with {model_to_use}...")
+    print(f"[INFO] (Local AI via LM Studio) Analyzing with {model_to_use}...")
 
     if parsed_data.get("type") == "image_url":
         return {
@@ -70,77 +136,87 @@ async def critique_resume(parsed_data, job_description=None):
 
     # ---------------- PROMPT ----------------
     prompt = f"""
-TASK: Perform a deep, ATS-style resume critique.
+[ATS AUDIT BRIEF & RECRUITER CRITIQUE TASK]
+Perform an exhaustive, high-fidelity corporate Applicant Tracking System (ATS) audit and professional senior recruiter critique on the candidate resume provided below.
 
-RESUME TEXT:
+[RESUME VALIDITY DETECTION (CRITICAL)]
+Before conducting the critique, analyze whether the provided text actually represents a professional resume or CV.
+- A resume typically includes professional work experience, educational background, technical/soft skills, projects, or contact information.
+- If the document is NOT a resume (e.g., it is programming source code, a generic cover letter, a shopping list, a textbook excerpt, financial accounts, or random prose):
+  1. Set the "is_resume" boolean field to false.
+  2. Set "overall_score" to 0.
+  3. Write a clinical, severe summary in the "summary" field explaining that the uploaded document does not appear to be a professional resume, and identify what kind of document it is (e.g., "The uploaded document is a Python script, not a professional resume. Please upload a valid resume.").
+  4. Leave the "strengths", "weaknesses", and "improvements" arrays empty.
+- If the document IS a professional resume, set "is_resume" to true and perform the critique normally.
+
+[NAME EXTRACTION CORE OBJECTIVE - CRITICAL]
+Identify and extract the candidate's actual full name.
+- Standard behavior: The full name is almost always located on the VERY FIRST LINE of the resume text.
+- Do NOT guess, do NOT hallucinate, do NOT use placeholder strings like "Candidate", "Unknown", "Name", or "N/A" unless the document is completely anonymous.
+- Do not extract email prefixes or section headers. Look strictly for standard name formatting (typically 2 to 4 capitalized words).
+
+[CANDIDATE RESUME INPUT]
 {resume_text}
 """
 
     if job_description:
         prompt += f"""
-JOB DESCRIPTION:
+[JOB DESCRIPTION MATCHING ENHANCEMENT]
+Cross-reference the candidate's skills and experience against the following target Job Description (JD):
 {job_description}
 
-IMPORTANT:
-- Treat the JD as the ATS reference baseline.
-- Missing CORE tools MUST be listed as weaknesses using:
-  "MISSING: <skill>"
+CRITICAL ASSIGNMENT INSTRUCTIONS:
+- Identify missing skills, core libraries, databases, frameworks, or tools listed in the JD that are not in the resume.
+- Any critical keyword gaps MUST be listed in the "weaknesses" list using the EXACT prefix: "MISSING: <skill_name>" (e.g., "MISSING: Kubernetes" or "MISSING: Apache Kafka").
 """
 
     prompt += """
-ANALYSIS REQUIREMENTS (MANDATORY):
+[REQUIRED ANALYSIS DIMENSIONS]
+Audit and parse the resume text against the following severe professional criteria:
 
-1. Identify key TECHNICAL SKILLS.
-2. Identify PROJECTS built by the candidate.
-   - Evaluate complexity, scale, ownership, and impact.
-3. Critique WORDING:
-   - Detect weak bullets ("worked on", "helped", "responsible for").
-   - Rewrite using strong action verbs and measurable outcomes.
-4. Generate a PROFESSIONAL SUMMARY:
-   - 3–4 lines
-   - Recruiter tone
-   - Clearly state strengths and gaps.
-5. Generate AT LEAST 3 IMPROVEMENTS.
-   - Each improvement must be either:
-     a) A before/after bullet rewrite
-     b) A concrete project or wording improvement suggestion
+1. COMPILATION OF CORE TECHNICAL SKILLS:
+   - Identify deep core engineering competencies and tools.
+   
+2. GOOGLE X-Y-Z METRIC COMPLIANCE AUDIT:
+   - The primary differentiator of world-class engineers is quantified business impact.
+   - Inspect every project and experience bullet point. Detect weak, passive phrases like "worked on", "helped design", "responsible for", "assisted", or "participated in".
+   - You must reformulate these into high-impact Google X-Y-Z bullets: "Accomplished [X] as measured by [Y], by doing [Z]" (e.g., "Architected a scalable Go event streaming backend, reducing queue latency by 35% under peak loads of 15,000 requests/sec").
 
-SCORING RULES (STRICT):
+3. ATS PARSING SYSTEM COMPATIBILITY:
+   - Assess layout structures. Call out risks like multi-column tables, text boxes, non-standard section headers, or complex graphics that might trip up standard regex parsers.
 
-- Score range: 1–100 (use full range).
-- Base the score on:
-  • Skills relevance → 40%
-  • Project quality & depth → 40%
-  • Wording & clarity → 20%
+[STRICT SCORING ENGINE RULES]
+Provide an aggregate score (1 to 100) reflecting the following breakdown:
+- Technical alignment & keyword depth (40%)
+- Quantitative impact & Google X-Y-Z phrasing (40%)
+- Wording, grammar, action verbs, and formatting layout (20%)
 
-SCORING BANDS:
-- 90–100 → Exceptional, near-ideal candidate
-- 70–89 → Strong candidate with minor gaps
-- 40–69 → Partial fit with notable weaknesses
-- 10–39 → Weak fit, limited relevance
-- 1–9 → Extremely weak or irrelevant resume
+SCORING DISTRIBUTION STRATEGY:
+- 90–100 -> Elite, near-perfect candidate matching all criteria.
+- 70–89 -> Strong candidate with solid engineering capability but minor gaps.
+- 40–69 -> Partial fit with heavy structural wording weaknesses or moderate keyword gaps.
+- 10–39 -> Poor fit with high layout risks or low core alignment.
+- 1–9 -> Completely irrelevant resume.
+- HARD PENALTY: If a target job description is provided and there is a major skill/domain mismatch (e.g., frontend developer applying for a principal ML role), CAP the final score at 35 regardless of other sub-scores.
 
-MISMATCH RULE (HARD CONSTRAINT):
-- If a MAJOR job-description mismatch exists,
-  cap the FINAL score at 35 regardless of sub-quality.
-
-DISTRIBUTION RULE:
-- Do NOT cluster scores around 50–70.
-- Penalize weak resumes aggressively.
-- Reward exceptional resumes decisively.
-
-JSON SCHEMA (STRICT):
+[STRICT JSON SCHEMA COMPLIANCE]
+Return ONLY a valid JSON payload conforming exactly to this structure. No conversational prefixes, no markdown formatting fences (e.g., do not wrap in ```json), just the raw JSON object:
 {
-  "candidate_name": "Name or Unknown",
-  "overall_score": number,
-  "summary": "Professional summary",
-  "strengths": ["..."],
-  "weaknesses": ["..."],
+  "candidate_name": "The candidate's exact full name (e.g., 'Aryan Panigrahi'). Do NOT return placeholders unless completely anonymous.",
+  "is_resume": true,
+  "overall_score": 78,
+  "summary": "3-4 sentences in a professional, severe, clinical recruiter tone evaluating the profile, strengths, and critical gaps. No emojis, no fluffy encouragement. If the document is not a resume, explain that clearly here.",
+  "strengths": [
+    "A highly professional engineering strength from the resume, e.g., 'Engineered high-throughput REST APIs leveraging FastAPI, demonstrating robust asynchronous design.'"
+  ],
+  "weaknesses": [
+    "A direct, critical technical or structural gap, e.g., 'MISSING: Containerization (Docker) or Cloud infrastructure patterns.'"
+  ],
   "improvements": [
     {
-      "original": "Original bullet or empty",
-      "better": "Improved bullet or suggestion",
-      "why": "Reason"
+      "original": "VERBATIM weak bullet point extracted from the resume.",
+      "better": "Improved Google X-Y-Z bullet point rewrite including active verbs and simulated high-fidelity technical metrics.",
+      "why": "A detailed technical breakdown of why this change improves ATS scanning and engineering manager appeal."
     }
   ]
 }
@@ -152,12 +228,20 @@ JSON SCHEMA (STRICT):
     ]
 
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        is_reasoning_model = any(tag in model_to_use.lower() for tag in ["deepseek-r1", "qwen3", "reasoning", "think"])
+        
+        async with httpx.AsyncClient(timeout=180.0) as client:
             payload = {
                 "model": model_to_use,
                 "messages": messages,
-                "temperature": 0.15
+                "max_tokens": 4096
             }
+            # Reasoning models often reject low temperature; use 0.6 for them, 0.05 for standard models
+            if is_reasoning_model:
+                payload["temperature"] = 0.6
+            else:
+                payload["temperature"] = 0.05
+                
             response = await client.post(
                 f"{LM_STUDIO_BASE_URL}/chat/completions",
                 json=payload
@@ -168,42 +252,79 @@ JSON SCHEMA (STRICT):
         cleaned = clean_json_text(raw)
         data = json.loads(cleaned)
 
+        # Heuristically check if this is a resume
+        is_resume = data.get("is_resume", True)
+        if is_resume:
+            heuristic_check = check_is_resume_heuristically(resume_text)
+            if not heuristic_check:
+                print("[WARN] Local heuristic determined this is not a resume. Overriding AI.")
+                is_resume = False
+
         # ---------------- PYTHON SAFETY NET ----------------
         improvements = data.get("improvements", [])
-        if not improvements:
+        if is_resume and not improvements:
             improvements = [{
                 "original": "",
                 "better": "Add quantified impact to your project descriptions (users, scale, performance).",
                 "why": "Recruiters prioritize measurable results over responsibilities."
             }]
+        elif not is_resume:
+            improvements = []
 
-        score = int(data.get("overall_score", 50))
-        score = max(1, min(score, 100))  # enforce 1–100
+        score = int(data.get("overall_score", 50)) if is_resume else 0
+        score = max(0, min(score, 100))  # enforce 0–100
+
+        # Post-process: if AI returned a generic name, try extracting from raw text
+        ai_name = data.get("candidate_name", "")
+        if is_resume and ai_name:
+            ai_name = ai_name.strip().strip('*_#-"\'')
+            if ai_name.lower() in ["candidate", "unknown", "name", "n/a", "unknown name", "candidate name", "user", "resume owner", "the candidate"]:
+                ai_name = ""
+        else:
+            ai_name = "Document"
+        
+        if is_resume and not ai_name:
+            ai_name = extract_candidate_name_from_text(resume_text)
+            
+        if is_resume and not ai_name:
+            ai_name = "Candidate"
 
         final = {
-            "candidate_name": data.get("candidate_name", "Candidate"),
+            "candidate_name": ai_name,
             "overall_score": score,
             "summary": data.get("summary", "Professional summary unavailable."),
-            "strengths": data.get("strengths", []),
-            "weaknesses": data.get("weaknesses", []),
+            "strengths": data.get("strengths", []) if is_resume else [],
+            "weaknesses": data.get("weaknesses", []) if is_resume else [],
             "improvements": improvements,
-            "raw_text": resume_text
+            "raw_text": resume_text,
+            "is_resume": is_resume
         }
 
-        print(f"✅ Analysis complete | Score: {score}")
+        print(f"[SUCCESS] Analysis complete | Score: {score}")
         return final
 
     except Exception as e:
-        print(f"⚠️ Local AI API failed ({e}). Running high-fidelity local heuristic parser...")
+        print(f"[WARN] Local AI API failed ({e}). Running high-fidelity local heuristic parser...")
         
+        is_resume = check_is_resume_heuristically(resume_text)
+        if not is_resume:
+            return {
+                "candidate_name": "Document",
+                "overall_score": 0,
+                "summary": "The uploaded document does not appear to be a professional resume or CV. It is missing key resume sections (Experience, Education, Skills) or resembles source code/plain text. Please upload a valid resume document.",
+                "strengths": [],
+                "weaknesses": [],
+                "improvements": [],
+                "raw_text": resume_text,
+                "is_resume": False
+            }
+            
         # Heuristic name extraction
-        lines = [line.strip() for line in resume_text.split('\n') if line.strip()]
-        candidate_name = "Candidate"
-        if lines:
-            # Pick first line if it looks like a name (not too long)
-            first_line = lines[0]
-            if len(first_line) < 30 and not any(x in first_line.lower() for x in ["resume", "cv", "curriculum", "contact", "email", "phone"]):
-                candidate_name = first_line
+        candidate_name = extract_candidate_name_from_text(resume_text)
+        if not candidate_name:
+            candidate_name = "Candidate"
+            
+        lines = [l.strip() for l in resume_text.split('\n') if l.strip()]
 
         # Skill matching heuristic
         skills_map = {
@@ -311,5 +432,6 @@ JSON SCHEMA (STRICT):
             "strengths": strengths,
             "weaknesses": weaknesses,
             "improvements": improvements,
-            "raw_text": resume_text
+            "raw_text": resume_text,
+            "is_resume": is_resume
         }

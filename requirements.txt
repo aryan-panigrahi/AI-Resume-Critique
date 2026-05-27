@@ -4,7 +4,9 @@ httpx
 python-dotenv
 google-generativeai
 pypdf
+pymupdf
 python-docx
+python-multipart
 pillow
 pytesseract
 #also install tesseract OCR and LM Studio separately.

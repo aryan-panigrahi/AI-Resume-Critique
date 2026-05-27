@@ -230,6 +230,29 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes sonarWave {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes loadingSlide {
+            0% {
+                left: -40%;
+            }
+            50% {
+                left: 100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
         /* State Transitions */
         .view-state {
             transition: opacity 0.4s ease, transform 0.4s ease;
@@ -245,14 +268,26 @@
 
 
         #history-drawer {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.2s ease;
         }
-        .drawer-collapsed {
-            transform: translateX(-350px) !important;
-            width: 0px !important;
+        #history-drawer.drawer-collapsed {
+            width: 0 !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            border-right-width: 0 !important;
             opacity: 0;
             overflow: hidden;
-            border-right-width: 0px !important;
+            pointer-events: none;
+            visibility: hidden;
+        }
+        /* Hide sidebar on small screens (< 1024px) like the old hidden lg:flex did */
+        @media (max-width: 1023px) {
+            #history-drawer {
+                display: none !important;
+            }
         }
 
         /* Hide Scrollbar */
@@ -354,9 +389,9 @@
                 <span class="material-symbols-outlined text-[16px]">newspaper</span>
                 <span>Job Pulse</span>
             </div>
-            <div onclick="toggleHistoryDrawer()" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
-                <span class="material-symbols-outlined text-[16px]">monitoring</span>
-                <span>Monitoring</span>
+            <div onclick="scrollToGuides()" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                <span>Guides</span>
             </div>
             <div onclick="toggleSupportModal()" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
                 <span class="material-symbols-outlined text-[16px]">support_agent</span>
@@ -371,6 +406,7 @@
         <div class="flex items-center gap-4">
             <!-- Utility sweep & debugger buttons -->
             <div class="flex items-center gap-1 border-r border-[#1c1c1c] pr-4">
+                <button id="btn-open-sidebar" onclick="toggleHistoryDrawer()" title="Open Scan History" class="hidden text-on-surface-variant hover:text-primary transition-colors items-center p-1.5 rounded-lg hover:bg-surface-variant/40"><span class="material-symbols-outlined text-[20px]">left_panel_open</span></button>
                 <button onclick="toggleDebug()" title="View Raw Extracted Text" class="text-on-surface-variant hover:text-primary transition-colors flex items-center p-1.5 rounded-lg hover:bg-surface-variant/40"><span class="material-symbols-outlined text-[20px]">terminal</span></button>
                 <button onclick="clearHistory()" title="Clear Scan History" class="text-on-surface-variant hover:text-primary transition-colors flex items-center p-1.5 rounded-lg hover:bg-surface-variant/40"><span class="material-symbols-outlined text-[20px]">delete_sweep</span></button>
             </div>
@@ -388,6 +424,24 @@
     </nav>
 
     <div class="flex flex-1 overflow-hidden z-10 relative">
+
+        <!-- History Sidebar Drawer -->
+        <aside id="history-drawer" class="w-[260px] min-w-[260px] shrink-0 bg-[#0a0a0a]/95 border-r border-white/[0.06] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300">
+            <!-- Drawer Header -->
+            <div class="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px]">history</span>
+                    <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Scan History</span>
+                </div>
+                <button onclick="toggleHistoryDrawer()" class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-lg hover:bg-surface-variant/40" title="Collapse">
+                    <span class="material-symbols-outlined text-[16px]">left_panel_close</span>
+                </button>
+            </div>
+            <!-- Scrollable History List -->
+            <div class="flex-1 overflow-y-auto p-3 flex flex-col gap-2" id="historyList">
+                <p class="text-label-sm font-light text-on-surface-variant p-2">No previous scans found.</p>
+            </div>
+        </aside>
 
         <!-- Main Content Area -->
         <main class="flex-1 overflow-y-auto p-4 md:p-gutter relative" id="main-content">
@@ -429,7 +483,7 @@
                                 </div>
                                 <p class="text-[11px] text-primary font-medium mt-3">✓ Ready to critique</p>
                             </div>
-                            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"/>
+                            <input type="file" id="file-input" class="hidden" accept="*/*"/>
                         </div>
                     </div>
                     
@@ -514,6 +568,64 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Bottom Section: Detailed Career & ATS Guides (Things to read about) -->
+                <div id="guides-section" class="mt-12">
+                    <h3 class="text-headline-md font-headline-md mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                        <span>Expert Career & ATS Guides</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <!-- Guide 1 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
+                                    <span class="material-symbols-outlined">robot</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">ATS Mastery: Demystifying the Robot Screener</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Understand how Applicant Tracking Systems parse and index candidate skills. Learn structural layout heuristics, font selection rules, and exact keyword target mapping practices to bypass automatic screening filters and secure human reviews.</p>
+                            </div>
+                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 2 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-4 group-hover:bg-secondary/20 transition-all">
+                                    <span class="material-symbols-outlined">analytics</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-secondary transition-colors">The Wording Formula: Metrics & Action Verbs</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Ditch passive phrasing like "responsible for" or "helped". Adopt the Google X-Y-Z formula: "Accomplished [X] as measured by [Y], by doing [Z]". Master a list of high-impact action verbs that instantly convey technical ownership and quantitative impact.</p>
+                            </div>
+                            <span class="text-[11px] text-secondary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 3 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
+                                    <span class="material-symbols-outlined">terminal</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">AI Interview Prep: Navigating Code Screeners</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Prepare for modern automated coding interviews. Discover how automated evaluation agents grade algorithmic syntax, complexity profiles, and explainability. Learn best practice tips for vocalizing code structures and structuring clean solutions.</p>
+                            </div>
+                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+
+                        <!-- Guide 4 -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
+                            <div>
+                                <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white mb-4 group-hover:bg-white/10 transition-all">
+                                    <span class="material-symbols-outlined">rocket_launch</span>
+                                </div>
+                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-white/80 transition-colors">Finding Funded Startups Before They Post</h4>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Discover early-stage startups that have closed funding rounds but haven't heavily broadcasted job openings. Uncover active venture capital database hacks, read startup crunch statistics, and craft cold outreach pitches directly targeting engineering managers.</p>
+                            </div>
+                            <span class="text-[11px] text-white font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- STATE 2: Loading State -->
@@ -530,41 +642,38 @@
                     <div class="ambient-particle absolute w-2.5 h-2.5 rounded-full bg-secondary/15 bottom-[10%] left-[45%] animate-[float_13s_infinite_ease-in-out]" style="animation-delay: 1.9s;"></div>
                 </div>
 
-                <div class="relative w-64 h-64 flex items-center justify-center mb-8 z-10 transition-transform duration-200 ease-out" id="loading-interactive-container">
-                    <!-- Orbital Systems (with 3D perspective tilts) -->
-                    <!-- Orbit 1 (Pistachio, fast, tilted) -->
-                    <div class="absolute w-36 h-36 border border-dashed border-primary/30 rounded-full flex items-center justify-center animate-[spin_6s_linear_infinite] pointer-events-none" style="transform: rotateX(65deg) rotateY(15deg);">
-                        <!-- Orbit Nodes -->
-                        <div class="w-3 h-3 rounded-full bg-primary absolute -top-1.5 shadow-[0_0_12px_#a3e635]"></div>
-                        <div class="w-2 h-2 rounded-full bg-primary/60 absolute -bottom-1 shadow-[0_0_8px_#a3e635]"></div>
-                    </div>
+                <div class="relative w-52 h-52 flex items-center justify-center mb-8 z-10 select-none pointer-events-none" id="loading-interactive-container">
+                    <!-- Outer premium thin radar track boundary -->
+                    <div class="absolute w-48 h-48 rounded-full border border-primary/25 bg-[#121212]/30 shadow-[inset_0_0_30px_rgba(163,230,53,0.06),0_0_40px_rgba(0,0,0,0.5)]"></div>
                     
-                    <!-- Orbit 2 (Orange, medium speed, reverse tilt) -->
-                    <div class="absolute w-48 h-48 border border-dashed border-secondary/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite_reverse] pointer-events-none" style="transform: rotateX(45deg) rotateY(-20deg);">
-                        <!-- Orbit Nodes -->
-                        <div class="w-3 h-3 rounded-full bg-secondary absolute -left-1.5 shadow-[0_0_12px_#fb923c]"></div>
-                        <div class="w-2.5 h-2.5 rounded-full bg-secondary/70 absolute -right-1 shadow-[0_0_8px_#fb923c]"></div>
-                    </div>
+                    <!-- Middle segmented tech scope ring -->
+                    <svg class="absolute w-[176px] h-[176px] animate-[spin_10s_linear_infinite_reverse]" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="46" stroke="var(--primary)" stroke-width="1.2" stroke-dasharray="18 10 32 14 6 6" fill="none" opacity="0.45"/>
+                    </svg>
 
-                    <!-- Orbit 3 (White, slow speed, high tilt) -->
-                    <div class="absolute w-56 h-56 border border-dashed border-white/10 rounded-full flex items-center justify-center animate-[spin_15s_linear_infinite] pointer-events-none" style="transform: rotateX(30deg) rotateY(40deg);">
-                        <!-- Orbit Node -->
-                        <div class="w-3.5 h-3.5 rounded-full bg-white absolute top-4 left-10 shadow-[0_0_12px_rgba(255,255,255,0.8)]"></div>
+                    <!-- Inner circular scan sweep overlay (Sleek sci-fi radar) -->
+                    <div class="absolute w-[156px] h-[156px] rounded-full overflow-hidden flex items-center justify-center animate-[spin_2.8s_linear_infinite]">
+                        <!-- Radial sweep gradient block -->
+                        <div class="absolute w-[200px] h-[200px] bg-gradient-to-tr from-transparent via-transparent to-primary/25" style="clip-path: polygon(50% 50%, 100% 0, 100% 50%); transform-origin: center;"></div>
                     </div>
                     
-                    <!-- Center Core Brain Module (Magnetic tilt target) -->
-                    <div id="loading-core" class="w-28 h-28 bg-[#121212] border-2 border-primary/40 rounded-full z-20 flex items-center justify-center shadow-[0_0_50px_rgba(163,230,53,0.25)] transition-transform duration-200 ease-out select-none relative overflow-hidden group">
-                        <!-- Glowing aura inside core -->
-                        <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <span class="material-symbols-outlined text-[48px] text-primary animate-pulse">memory</span>
+                    <!-- Precision crosshair reticle target in the center -->
+                    <div class="absolute w-14 h-14 flex items-center justify-center relative" id="loading-core">
+                        <!-- Crosshair tick lines -->
+                        <span class="absolute w-4 h-[1px] bg-primary/70"></span>
+                        <span class="absolute h-4 w-[1px] bg-primary/70"></span>
+                        
+                        <!-- Pulsing target center point -->
+                        <span class="absolute w-2.5 h-2.5 rounded-full bg-primary/25 animate-ping"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_#a3e635]"></span>
                     </div>
                 </div>
 
-                <h3 class="text-headline-md font-headline-md mb-2 text-primary z-10" id="loading-text">⚙️ Extracting Text...</h3>
+                <h3 class="text-headline-md font-headline-md mb-2 text-primary z-10" id="loading-text">Extracting Text...</h3>
                 <p class="text-on-surface-variant max-w-sm text-center z-10 px-4 text-[13px] font-light leading-relaxed">Your data stays fully local. This may take 15–30s for the DeepSeek/Llama model to run reasoning steps.</p>
                 
-                <div class="w-64 h-1 bg-surface-variant rounded-full mt-6 overflow-hidden z-10">
-                    <div class="h-full bg-primary w-2/3 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                <div class="w-64 h-1.5 bg-[#121212] border border-white/[0.05] rounded-full mt-6 overflow-hidden z-10 relative">
+                    <div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full w-2/5 absolute left-0 top-0 animate-[loadingSlide_1.8s_infinite_ease-in-out]"></div>
                 </div>
             </div>
 
@@ -578,6 +687,30 @@
                     </button>
                     <button onclick="downloadReport()" class="btn-gradient px-4 py-2 rounded-lg text-label-md font-label-md font-semibold flex items-center gap-2">
                         <span class="material-symbols-outlined">download</span> Download PDF Report
+                    </button>
+                </div>
+
+                <!-- Non-Resume Alert Container (Hidden by default) -->
+                <div id="non-resume-alert" class="hidden glass-card bg-[#121212]/50 border border-error/20 backdrop-blur-xl p-8 rounded-[24px] flex flex-col items-center justify-center text-center max-w-[650px] mx-auto mt-12 gap-5 relative overflow-hidden group select-none">
+                    <div class="absolute inset-0 bg-error/[0.01] pointer-events-none"></div>
+                    <div class="absolute -top-24 -left-24 w-48 h-48 rounded-full bg-error/10 blur-[80px] pointer-events-none"></div>
+                    <div class="absolute -bottom-24 -right-24 w-48 h-48 rounded-full bg-error/10 blur-[80px] pointer-events-none"></div>
+                    
+                    <div class="w-16 h-16 rounded-full bg-error/10 border border-error/20 flex items-center justify-center text-error animate-pulse z-10 shrink-0">
+                        <span class="material-symbols-outlined text-[32px]">warning</span>
+                    </div>
+                    
+                    <div class="z-10 flex flex-col gap-2">
+                        <h2 class="text-[22px] font-black text-white uppercase tracking-wider font-display-lg">Non-Resume File Detected</h2>
+                        <p class="text-body-md font-light text-on-surface-variant leading-relaxed max-w-[500px]" id="non-resume-message">
+                            The analysis engine has determined that the uploaded document does not resemble a professional resume or CV.
+                        </p>
+                    </div>
+                    
+                    <div class="w-full h-px bg-outline-variant/15 my-1 z-10"></div>
+                    
+                    <button onclick="resetToUpload()" class="btn-gradient bg-[#1c1c1c]/90 text-white border border-[#2b2b2b]/60 hover:bg-[#282828] hover:border-error/40 px-6 py-3 rounded-xl text-label-md font-semibold flex items-center gap-2 shadow-lg cursor-pointer transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] z-10">
+                        <span class="material-symbols-outlined text-error">cloud_upload</span> Upload a Valid Resume
                     </button>
                 </div>
 
@@ -624,8 +757,8 @@
                                     </div>
                                     
                                     <!-- Bottom: High Fidelity Overlapping Reactive Sparklines SVG -->
-                                    <div class="absolute bottom-0 left-0 right-0 h-[70px] z-0 opacity-80 select-none pointer-events-none">
-                                        <svg viewBox="0 0 300 70" preserveAspectRatio="none" class="w-full h-full">
+                                    <div class="absolute bottom-0 left-0 right-0 h-[90px] z-0 opacity-80 select-none pointer-events-none">
+                                        <svg viewBox="0 0 300 100" preserveAspectRatio="none" class="w-full h-full">
                                             <defs>
                                                 <!-- Gradients -->
                                                 <linearGradient id="gradient-lime" x1="0" y1="0" x2="0" y2="1">
@@ -639,12 +772,12 @@
                                             </defs>
                                             
                                             <!-- Areas -->
-                                            <path id="ats-sparkline-area" d="M 0 60 Q 75 60, 150 60 T 300 60 L 300 70 L 0 70 Z" fill="url(#gradient-lime)" />
-                                            <path id="readability-sparkline-area" d="M 0 60 Q 100 60, 200 60 T 300 60 L 300 70 L 0 70 Z" fill="url(#gradient-orange)" />
+                                            <path id="ats-sparkline-area" d="M 0 90 Q 75 90, 150 90 T 300 90 L 300 100 L 0 100 Z" fill="url(#gradient-lime)" />
+                                            <path id="readability-sparkline-area" d="M 0 90 Q 100 90, 200 90 T 300 90 L 300 100 L 0 100 Z" fill="url(#gradient-orange)" />
                                             
                                             <!-- Lines -->
-                                            <path id="ats-sparkline-line" d="M 0 60 Q 75 60, 150 60 T 300 60" fill="none" stroke="#a3e635" stroke-width="2.5" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(163,230,53,0.5)]" />
-                                            <path id="readability-sparkline-line" d="M 0 60 Q 100 60, 200 60 T 300 60" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(251,146,60,0.4)]" />
+                                            <path id="ats-sparkline-line" d="M 0 90 Q 75 90, 150 90 T 300 90" fill="none" stroke="#a3e635" stroke-width="2.5" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(163,230,53,0.5)]" />
+                                            <path id="readability-sparkline-line" d="M 0 90 Q 100 90, 200 90 T 300 90" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(251,146,60,0.4)]" />
                                         </svg>
                                     </div>
                                 </div>
@@ -766,7 +899,7 @@
                                                 <span class="font-bold text-primary">Languages (LANG)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">80</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">85</strong></span>
-                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">Target Exceeded (+5)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -791,7 +924,7 @@
                                                 <span class="font-bold text-secondary">Frontend Web (FE)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">90</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">65</strong></span>
-                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-25)</span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">Deficit / Gap (-25)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -816,7 +949,7 @@
                                                 <span class="font-bold text-primary">Backend Systems (BE)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">75</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">80</strong></span>
-                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">Target Exceeded (+5)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -841,7 +974,7 @@
                                                 <span class="font-bold text-secondary">Databases (DB)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">85</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">50</strong></span>
-                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-35)</span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">Deficit / Gap (-35)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -866,7 +999,7 @@
                                                 <span class="font-bold text-primary">Cloud & Infrastructure (CLD)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">65</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">70</strong></span>
-                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">Target Exceeded (+5)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -891,7 +1024,7 @@
                                                 <span class="font-bold text-secondary">Testing & QA (QA)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">55</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">30</strong></span>
-                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-25)</span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">Deficit / Gap (-25)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -916,7 +1049,7 @@
                                                 <span class="font-bold text-primary">DevOps & Git (GIT)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">85</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">90</strong></span>
-                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">Target Exceeded (+5)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -941,7 +1074,7 @@
                                                 <span class="font-bold text-secondary">AI & Machine Learning (AI)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">95</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-secondary font-bold">55</strong></span>
-                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">⚠ Deficit / Gap (-40)</span>
+                                                <span class="text-orange-400 text-[10px] font-bold mt-0.5">Deficit / Gap (-40)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -966,7 +1099,7 @@
                                                 <span class="font-bold text-primary">Soft Skills & Agile (SOFT)</span>
                                                 <span class="text-on-surface-variant">Baseline Target: <strong class="text-white">80</strong></span>
                                                 <span class="text-on-surface-variant">Resume Match: <strong class="text-primary font-bold">85</strong></span>
-                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">✓ Target Exceeded (+5)</span>
+                                                <span class="text-emerald-400 text-[10px] font-bold mt-0.5">Target Exceeded (+5)</span>
                                             </div>
                                             <!-- Arrow -->
                                             <div class="w-2 h-2 bg-black border-r border-b border-[#222] rotate-45 -mt-1"></div>
@@ -1002,6 +1135,24 @@
                                     </div>
                                     <span class="text-on-surface-variant font-medium text-[11px]" id="matrix-total-label">Total Keywords: 420</span>
                                 </div>
+                            </div>
+                            
+                            <!-- Card 4: RECRUITER SUMMARY CARD -->
+                            <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-start h-[218px] relative overflow-hidden group select-none">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none"></div>
+                                <div class="flex items-start justify-between z-10">
+                                    <div>
+                                        <h2 class="text-headline-md font-bold text-white mb-0.5 leading-none" id="res-name">Name</h2>
+                                        <p class="text-on-surface-variant text-label-sm font-light mt-1">Professional Candidate</p>
+                                    </div>
+                                    <div class="bg-[#1c1c1c]/80 px-2.5 py-1 rounded-lg border border-[#2b2b2b]/60 flex items-center gap-1.5 shrink-0">
+                                        <span class="material-symbols-outlined text-[15px] text-primary">robot_2</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-white">AI Feedback</span>
+                                    </div>
+                                </div>
+                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed mt-3 flex-1 overflow-y-auto pr-1" id="res-summary">
+                                    Critique details loaded successfully.
+                                </p>
                             </div>
                         </div>
                         
@@ -1188,26 +1339,7 @@
                         </div>
                     </div>
 
-                    <!-- Bottom Details: Recruiter Summary, Strengths, Gaps, Action Enhancements -->
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
-                        <!-- Recruiter Summary Card -->
-                        <div class="md:col-span-12 glass-card rounded-xl p-8 relative overflow-hidden stagger-item">
-                            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
-                            <div class="flex items-start justify-between mb-6">
-                                <div>
-                                    <h2 class="text-headline-lg font-headline-lg mb-1" id="res-name">Name</h2>
-                                    <p class="text-on-surface-variant text-label-md font-label-md">Professional Candidate</p>
-                                </div>
-                                <div class="bg-surface-container px-3 py-1.5 rounded-lg border border-outline-variant/20 flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px] text-primary">robot_2</span>
-                                    <span class="text-label-sm font-label-sm font-semibold">AI Recruiter Feedback</span>
-                                </div>
-                            </div>
-                            <p class="text-body-md font-body-md text-on-surface/90 leading-relaxed" id="res-summary">
-                                Critique details loaded successfully.
-                            </p>
-                        </div>
-                    </div>
+
 
                     <!-- Middle Row: Strengths & Gaps -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-gutter">
@@ -1229,6 +1361,75 @@
                             </div>
                             <div class="flex flex-wrap gap-2" id="res-weaknesses">
                                 <!-- Injected Missing pills -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Radar Chart Section -->
+                    <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl rounded-[24px] overflow-hidden mb-8 stagger-item" id="radar-chart-section">
+                        <div class="p-6 pb-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary text-[18px]">radar</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-body-lg font-bold text-white tracking-wide">Skills Radar Matrix</h3>
+                                        <p class="text-[10px] text-on-surface-variant font-light">Multi-dimensional competency mapping across 6 core engineering domains</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_6px_rgba(163,230,53,0.5)]"></span>
+                                        <span class="text-[10px] text-on-surface-variant font-medium">Resume</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-white/30"></span>
+                                        <span class="text-[10px] text-on-surface-variant font-medium">Baseline</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-4 px-6 pb-6">
+                            <!-- SVG Radar Chart Container -->
+                            <div class="relative w-full max-w-[420px] aspect-square select-none" id="radar-chart-container">
+                                <svg id="radar-chart-svg" viewBox="0 0 400 400" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <radialGradient id="radar-bg-glow" cx="50%" cy="50%" r="50%">
+                                            <stop offset="0%" stop-color="#a3e635" stop-opacity="0.03"/>
+                                            <stop offset="100%" stop-color="#a3e635" stop-opacity="0"/>
+                                        </radialGradient>
+                                        <linearGradient id="radar-fill-grad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#a3e635" stop-opacity="0.25"/>
+                                            <stop offset="100%" stop-color="#a3e635" stop-opacity="0.05"/>
+                                        </linearGradient>
+                                        <filter id="radar-glow">
+                                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                                            <feMerge>
+                                                <feMergeNode in="blur"/>
+                                                <feMergeNode in="SourceGraphic"/>
+                                            </feMerge>
+                                        </filter>
+                                    </defs>
+                                    <!-- Background glow -->
+                                    <circle cx="200" cy="200" r="170" fill="url(#radar-bg-glow)"/>
+                                    <!-- Grid rings (drawn by JS) -->
+                                    <g id="radar-grid"></g>
+                                    <!-- Axis lines (drawn by JS) -->
+                                    <g id="radar-axes"></g>
+                                    <!-- Baseline polygon -->
+                                    <polygon id="radar-baseline" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+                                    <!-- Data polygon -->
+                                    <polygon id="radar-data" fill="url(#radar-fill-grad)" stroke="#a3e635" stroke-width="2.5" stroke-linejoin="round" filter="url(#radar-glow)" style="opacity:0; transition: opacity 0.8s ease;"/>
+                                    <!-- Data points (drawn by JS) -->
+                                    <g id="radar-points"></g>
+                                    <!-- Labels (drawn by JS) -->
+                                    <g id="radar-labels"></g>
+                                </svg>
+                            </div>
+                            <!-- Right side: Skill breakdown list -->
+                            <div class="flex flex-col gap-2 w-full md:w-[280px] shrink-0" id="radar-skill-breakdown">
+                                <!-- Populated by JS -->
                             </div>
                         </div>
                     </div>
@@ -1274,7 +1475,7 @@
                     <!-- Left Column: News Box Feed (Col span 7) -->
                     <div class="lg:col-span-7 flex flex-col">
                         <!-- Card: NEWS BOX -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-full select-none">
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-[600px] select-none">
                             <div class="flex justify-between items-center mb-6">
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-primary text-[20px]">feed</span>
@@ -1294,7 +1495,7 @@
                     <!-- Right Column: Emerging Companies Spotlight (Col span 5) -->
                     <div class="lg:col-span-5 flex flex-col">
                         <!-- Card: COMPANIES SPOTLIGHT -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-full select-none">
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col h-[600px] select-none">
                             <div class="flex justify-between items-center mb-6">
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-secondary text-[20px]">stars</span>
@@ -1304,7 +1505,7 @@
                             </div>
 
                             <!-- Curated Startups list -->
-                            <div class="flex-1 flex flex-col justify-between py-1 gap-4">
+                            <div class="flex-1 flex flex-col py-1 gap-3">
                                 <!-- Startup 1: Linear -->
                                 <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
                                     <div class="flex items-center gap-3">
@@ -1364,66 +1565,37 @@
                                         <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Bottom Section: Detailed Career & ATS Guides (Things to read about) -->
-                <div>
-                    <h3 class="text-headline-md font-headline-md mb-6 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary">menu_book</span>
-                        <span>Expert Career & ATS Guides</span>
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                        <!-- Guide 1 -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
-                            <div>
-                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
-                                    <span class="material-symbols-outlined">robot</span>
+                                <!-- Startup 5: Resend -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-[#818cf8] text-[16px]">R</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Resend</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: React, Node, TypeScript</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$30M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
                                 </div>
-                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">ATS Mastery: Demystifying the Robot Screener</h4>
-                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Understand how Applicant Tracking Systems parse and index candidate skills. Learn structural layout heuristics, font selection rules, and exact keyword target mapping practices to bypass automatic screening filters and secure human reviews.</p>
-                            </div>
-                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
-                        </div>
 
-                        <!-- Guide 2 -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
-                            <div>
-                                <div class="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-4 group-hover:bg-secondary/20 transition-all">
-                                    <span class="material-symbols-outlined">analytics</span>
+                                <!-- Startup 6: Fly.io -->
+                                <div class="flex items-center justify-between p-3.5 bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl hover:border-primary/30 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center font-bold text-[#c084fc] text-[16px]">F</div>
+                                        <div>
+                                            <h4 class="text-[14px] font-bold text-white leading-none">Fly.io</h4>
+                                            <span class="text-[11px] text-on-surface-variant font-light mt-1 block">Stack: Go, Rust, Elixir</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-bold rounded-full border border-primary/25">$70M Raised</span>
+                                        <span class="text-[10px] text-emerald-400 font-bold block mt-1">✓ Active Hiring</span>
+                                    </div>
                                 </div>
-                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-secondary transition-colors">The Wording Formula: Metrics & Action Verbs</h4>
-                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Ditch passive phrasing like "responsible for" or "helped". Adopt the Google X-Y-Z formula: "Accomplished [X] as measured by [Y], by doing [Z]". Master a list of high-impact action verbs that instantly convey technical ownership and quantitative impact.</p>
                             </div>
-                            <span class="text-[11px] text-secondary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
-                        </div>
-
-                        <!-- Guide 3 -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
-                            <div>
-                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary/20 transition-all">
-                                    <span class="material-symbols-outlined">terminal</span>
-                                </div>
-                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">AI Interview Prep: Navigating Code Screeners</h4>
-                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Prepare for modern automated coding interviews. Discover how automated evaluation agents grade algorithmic syntax, complexity profiles, and explainability. Learn best practice tips for vocalizing code structures and structuring clean solutions.</p>
-                            </div>
-                            <span class="text-[11px] text-primary font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
-                        </div>
-
-                        <!-- Guide 4 -->
-                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-2xl hover:border-primary/30 transition-all flex flex-col justify-between group cursor-pointer relative">
-                            <div>
-                                <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white mb-4 group-hover:bg-white/10 transition-all">
-                                    <span class="material-symbols-outlined">rocket_launch</span>
-                                </div>
-                                <h4 class="text-body-lg font-bold text-white mb-2 group-hover:text-white/80 transition-colors">Finding Funded Startups Before They Post</h4>
-                                <p class="text-[12px] text-on-surface-variant font-light leading-relaxed">Discover early-stage startups that have closed funding rounds but haven't heavily broadcasted job openings. Uncover active venture capital database hacks, read startup crunch statistics, and craft cold outreach pitches directly targeting engineering managers.</p>
-                            </div>
-                            <span class="text-[11px] text-white font-bold mt-4 flex items-center gap-1 group-hover:underline">Read Full Article <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1505,8 +1677,6 @@
             const dropzone = document.getElementById('dropzone');
             const fileInput = document.getElementById('file-input');
             const btnCritique = document.getElementById('btn-critique');
-            const sidebar = document.getElementById('sidebar');
-            const toggleSidebarBtn = document.getElementById('toggle-sidebar');
 
             // View States
             const states = {
@@ -1533,18 +1703,6 @@
                 cursorGlow.style.opacity = '0.07';
                 cursorGlow.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`;
             });
-
-            // Sidebar Collapse toggling
-            if(toggleSidebarBtn && sidebar) {
-                toggleSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('sidebar-collapsed');
-                    // Automatically collapse history drawer Pane 2 if vertical Pane 1 is collapsed
-                    const drawer = document.getElementById('history-drawer');
-                    if (sidebar.classList.contains('sidebar-collapsed')) {
-                        drawer.classList.add('drawer-collapsed');
-                    }
-                });
-            }
 
             // File selection event bindings
             fileInput.addEventListener('change', (e) => {
@@ -1699,7 +1857,33 @@
             
             // Get file extension for icon
             const ext = file.name.split('.').pop().toLowerCase();
-            const iconMap = { pdf: 'picture_as_pdf', doc: 'description', docx: 'description', txt: 'article', png: 'image', jpg: 'image', jpeg: 'image', webp: 'image' };
+            const iconMap = { 
+                pdf: 'picture_as_pdf', 
+                doc: 'description', 
+                docx: 'description', 
+                odt: 'description',
+                pages: 'description',
+                rtf: 'article',
+                txt: 'article', 
+                md: 'article', 
+                html: 'code',
+                xml: 'code',
+                png: 'image', 
+                jpg: 'image', 
+                jpeg: 'image', 
+                webp: 'image',
+                gif: 'image',
+                bmp: 'image',
+                tiff: 'image',
+                heic: 'image',
+                heif: 'image',
+                xlsx: 'table_chart',
+                xls: 'table_chart',
+                csv: 'table_chart',
+                tsv: 'table_chart',
+                pptx: 'present_to_all',
+                ppt: 'present_to_all'
+            };
             const icon = iconMap[ext] || 'description';
             
             // Show preview, hide prompt
@@ -1748,13 +1932,32 @@
             transitionTo('LOADING');
 
             // Cycle loading status text
-            const statuses = ["⚙️ Extracting Text...", "🧠 DeepSeek-R1 is thinking...", "⚖️ Evaluating ATS Scoring Rules..."];
+            const statuses = [
+                "Extracting text blocks and metadata...",
+                "Running ATS keyword matching filters...",
+                "Connecting to local LLM inference endpoint...",
+                "Analyzing project complexity and technical ownership...",
+                "Evaluating score distributions against rules...",
+                "Reviewing wording patterns and passive bullets...",
+                "Synthesizing final ATS score and metrics...",
+                "Generating high-impact rewrites and suggestions..."
+            ];
             let statusIndex = 0;
             loadingText.textContent = statuses[0];
             const statusInterval = setInterval(() => {
                 statusIndex = (statusIndex + 1) % statuses.length;
-                loadingText.textContent = statuses[statusIndex];
-            }, 2500);
+                
+                // Add elegant fade/slide micro-animation on text transition
+                loadingText.style.opacity = '0';
+                loadingText.style.transform = 'translateY(-4px)';
+                loadingText.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                
+                setTimeout(() => {
+                    loadingText.textContent = statuses[statusIndex];
+                    loadingText.style.opacity = '1';
+                    loadingText.style.transform = 'translateY(0)';
+                }, 220);
+            }, 3200);
 
             // Assemble payload
             const formData = new FormData();
@@ -1799,9 +2002,40 @@
         // Toggle Slide-out Pane 2 Scan History Drawer
         function toggleHistoryDrawer() {
             const drawer = document.getElementById('history-drawer');
-            if (drawer) {
-                drawer.classList.toggle('drawer-collapsed');
+            const openBtn = document.getElementById('btn-open-sidebar');
+            if (!drawer) return;
+
+            const isCollapsed = drawer.classList.contains('drawer-collapsed');
+            if (isCollapsed) {
+                // Re-open the drawer
+                drawer.classList.remove('drawer-collapsed');
+                if (openBtn) openBtn.classList.replace('flex', 'hidden');
+            } else {
+                // Collapse the drawer
+                drawer.classList.add('drawer-collapsed');
+                if (openBtn) openBtn.classList.replace('hidden', 'flex');
             }
+        }
+        // Scroll to career guides section
+        function scrollToGuides() {
+            const uploadHub = document.getElementById('state-upload');
+            if (uploadHub.classList.contains('view-hidden')) {
+                transitionTo('UPLOAD');
+            }
+            setTimeout(() => {
+                const guides = document.getElementById('guides-section');
+                const mainContent = document.getElementById('main-content');
+                if (guides && mainContent) {
+                    const mainRect = mainContent.getBoundingClientRect();
+                    const guidesRect = guides.getBoundingClientRect();
+                    const targetScrollTop = mainContent.scrollTop + (guidesRect.top - mainRect.top) - 16;
+                    
+                    mainContent.scrollTo({
+                        top: targetScrollTop,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
         }
 
         // Toggle Support Contact Modal
@@ -1816,6 +2050,33 @@
 
         // Dynamic results populate
         function renderResults(data) {
+            const isResume = data.is_resume !== false;
+            
+            const pdfContainer = document.querySelector('.pdf-export-container');
+            const nonResumeAlert = document.getElementById('non-resume-alert');
+            const downloadBtn = document.querySelector('button[onclick="downloadReport()"]');
+            
+            if (!isResume) {
+                if (pdfContainer) pdfContainer.classList.add('hidden');
+                if (downloadBtn) downloadBtn.classList.add('hidden');
+                const radarSection = document.getElementById('radar-chart-section');
+                if (radarSection) radarSection.classList.add('hidden');
+                if (nonResumeAlert) {
+                    nonResumeAlert.classList.remove('hidden');
+                    const msgEl = document.getElementById('non-resume-message');
+                    if (msgEl) {
+                        msgEl.textContent = data.summary || "The analysis engine has determined that the uploaded document does not resemble a professional resume or CV. Please upload a valid resume.";
+                    }
+                }
+                return;
+            } else {
+                if (pdfContainer) pdfContainer.classList.remove('hidden');
+                if (downloadBtn) downloadBtn.classList.remove('hidden');
+                if (nonResumeAlert) nonResumeAlert.classList.add('hidden');
+                const radarSection = document.getElementById('radar-chart-section');
+                if (radarSection) radarSection.classList.remove('hidden');
+            }
+
             document.getElementById('res-name').textContent = data.candidate_name || "Candidate";
             document.getElementById('res-summary').textContent = data.summary || "Summary details are empty.";
 
@@ -1931,6 +2192,11 @@
             setTimeout(() => {
                 animateScore(data.overall_score || 0);
             }, 300);
+
+            // Render Skills Radar Chart
+            setTimeout(() => {
+                renderRadarChart(data);
+            }, 500);
         }
 
         // Count-up animations for dashboard score indicators and dynamic, reactive sparklines
@@ -1972,81 +2238,336 @@
                 
                 // Update sparkline paths dynamically to make them reactive & complete
                 if (atsLine && atsArea) {
-                    // Taper to baseline (y = 60) at both edges: 0 and 300
-                    const y1_ats = 60 - (currentAts * 0.7);
-                    const y2_ats = 60 - (currentAts * 0.3);
-                    atsLine.setAttribute('d', `M 0,60 Q 75,${y1_ats} 150,${y2_ats} T 300,60`);
-                    atsArea.setAttribute('d', `M 0,60 Q 75,${y1_ats} 150,${y2_ats} T 300,60 L 300,70 L 0,70 Z`);
+                    const y1_ats = 90 - (currentAts * 0.7);
+                    const y2_ats = 90 - (currentAts * 0.3);
+                    atsLine.setAttribute('d', `M 0,90 Q 75,${y1_ats} 150,${y2_ats} T 300,90`);
+                    atsArea.setAttribute('d', `M 0,90 Q 75,${y1_ats} 150,${y2_ats} T 300,90 L 300,100 L 0,100 Z`);
                 }
                 
                 if (readLine && readArea) {
-                    // Offset phase to cross lines organically, tapering to 60 at edges
-                    const y1_read = 60 - (currentRead * 0.3);
-                    const y2_read = 60 - (currentRead * 0.7);
-                    readLine.setAttribute('d', `M 0,60 Q 100,${y1_read} 200,${y2_read} T 300,60`);
-                    readArea.setAttribute('d', `M 0,60 Q 100,${y1_read} 200,${y2_read} T 300,60 L 300,70 L 0,70 Z`);
+                    const y1_read = 90 - (currentRead * 0.3);
+                    const y2_read = 90 - (currentRead * 0.7);
+                    readLine.setAttribute('d', `M 0,90 Q 100,${y1_read} 200,${y2_read} T 300,90`);
+                    readArea.setAttribute('d', `M 0,90 Q 100,${y1_read} 200,${y2_read} T 300,90 L 300,100 L 0,100 Z`);
                 }
             }, interval);
         }
 
-        // Save scan history details locally
-        function saveToHistory(data) {
-            let history = JSON.parse(localStorage.getItem("critiqueHistory") || "[]");
+        // ============= SKILLS RADAR CHART =============
+        function renderRadarChart(data) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const cx = 200, cy = 200, maxR = 150;
+            const rawText = (data.raw_text || "").toLowerCase();
+            const strengths = (data.strengths || []).join(" ").toLowerCase();
+            const weaknesses = (data.weaknesses || []).join(" ").toLowerCase();
 
-            const item = {
-                id: Date.now(),
-                name: data.candidate_name || "Unknown",
-                score: data.overall_score || 0,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                full: data
-            };
+            // 6 skill domains with keyword arrays for detection
+            const domains = [
+                { label: "Languages", short: "LANG", icon: "code", keywords: ["python","javascript","typescript","java","c\\+\\+","c#","go","rust","ruby","php","swift","kotlin","scala","r\\b","perl","lua","matlab","haskell","dart","objective-c"] },
+                { label: "Frontend", short: "FE", icon: "web", keywords: ["react","angular","vue","svelte","html","css","tailwind","bootstrap","sass","next.js","nuxt","gatsby","webpack","vite","redux","jquery","figma","responsive","ui/ux","ux"] },
+                { label: "Backend", short: "BE", icon: "dns", keywords: ["fastapi","django","flask","express","node","spring","laravel","rails","asp.net","graphql","rest","api","microservice","grpc","middleware","websocket","socket","celery","rabbitmq"] },
+                { label: "Cloud / Infra", short: "CLD", icon: "cloud", keywords: ["aws","azure","gcp","docker","kubernetes","terraform","ci/cd","jenkins","github actions","devops","linux","nginx","apache","serverless","lambda","cloudflare","heroku","vercel","netlify","ansible"] },
+                { label: "AI / ML", short: "AI", icon: "psychology", keywords: ["machine learning","deep learning","pytorch","tensorflow","keras","scikit","nlp","computer vision","neural network","gpt","llm","transformer","bert","hugging face","opencv","pandas","numpy","data science","model training","fine-tun"] },
+                { label: "Soft Skills", short: "SOFT", icon: "groups", keywords: ["leadership","team","agile","scrum","communication","collaboration","mentoring","presentation","stakeholder","project management","cross-functional","problem solving","critical thinking","time management","ownership"] }
+            ];
 
-            history.unshift(item);
-            if(history.length > 8) history.pop();
+            // Calculate scores for each domain (0-100)
+            const scores = domains.map(d => {
+                let found = 0;
+                d.keywords.forEach(kw => {
+                    const regex = new RegExp(kw, 'i');
+                    if (regex.test(rawText)) found++;
+                });
+                // Scale: 0 keywords = 15, 1 = 35, 2 = 50, 3 = 65, 4 = 75, 5 = 82, 6+ = 88-95
+                const baseScore = Math.min(95, 15 + found * 16);
+                // Boost if mentioned in strengths
+                const boost = d.keywords.some(kw => new RegExp(kw, 'i').test(strengths)) ? 8 : 0;
+                // Penalty if mentioned in weaknesses as MISSING
+                const penalty = d.keywords.some(kw => new RegExp(kw, 'i').test(weaknesses)) ? 5 : 0;
+                return Math.max(10, Math.min(95, baseScore + boost - penalty));
+            });
 
-            localStorage.setItem("critiqueHistory", JSON.stringify(history));
-            localStorage.setItem("latestCritiqueScan", JSON.stringify(data));
+            // Baselines (industry standard expectations)
+            const baselines = [75, 70, 75, 65, 60, 70];
+
+            const numAxes = domains.length;
+            const angleStep = (2 * Math.PI) / numAxes;
+            const startAngle = -Math.PI / 2; // start from top
+
+            function polarToXY(angle, radius) {
+                return {
+                    x: cx + radius * Math.cos(angle),
+                    y: cy + radius * Math.sin(angle)
+                };
+            }
+
+            // Draw grid rings
+            const gridGroup = document.getElementById('radar-grid');
+            gridGroup.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const r = (maxR / 5) * i;
+                const ring = document.createElementNS(svgNS, 'polygon');
+                let pts = [];
+                for (let j = 0; j < numAxes; j++) {
+                    const angle = startAngle + j * angleStep;
+                    const p = polarToXY(angle, r);
+                    pts.push(`${p.x},${p.y}`);
+                }
+                ring.setAttribute('points', pts.join(' '));
+                ring.setAttribute('fill', 'none');
+                ring.setAttribute('stroke', i === 5 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)');
+                ring.setAttribute('stroke-width', '1');
+                gridGroup.appendChild(ring);
+            }
+
+            // Draw axes
+            const axesGroup = document.getElementById('radar-axes');
+            axesGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const p = polarToXY(angle, maxR);
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', cx);
+                line.setAttribute('y1', cy);
+                line.setAttribute('x2', p.x);
+                line.setAttribute('y2', p.y);
+                line.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+                line.setAttribute('stroke-width', '1');
+                axesGroup.appendChild(line);
+            }
+
+            // Draw baseline polygon
+            const baselineEl = document.getElementById('radar-baseline');
+            let baselinePts = [];
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (baselines[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+                baselinePts.push(`${p.x},${p.y}`);
+            }
+            baselineEl.setAttribute('points', baselinePts.join(' '));
+
+            // Draw data polygon (animated)
+            const dataEl = document.getElementById('radar-data');
+            let dataPts = [];
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (scores[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+                dataPts.push(`${p.x},${p.y}`);
+            }
+            // Start from center, then animate to actual points
+            let centerPts = Array(numAxes).fill(`${cx},${cy}`).join(' ');
+            dataEl.setAttribute('points', centerPts);
+            dataEl.style.opacity = '0';
+
+            setTimeout(() => {
+                dataEl.setAttribute('points', dataPts.join(' '));
+                dataEl.style.opacity = '1';
+            }, 100);
+
+            // Draw data points with glow
+            const pointsGroup = document.getElementById('radar-points');
+            pointsGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (scores[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+
+                // Outer glow ring
+                const glow = document.createElementNS(svgNS, 'circle');
+                glow.setAttribute('cx', p.x);
+                glow.setAttribute('cy', p.y);
+                glow.setAttribute('r', '8');
+                glow.setAttribute('fill', 'rgba(163,230,53,0.15)');
+                glow.style.opacity = '0';
+                glow.style.transition = `opacity 0.6s ease ${i * 0.1}s`;
+                pointsGroup.appendChild(glow);
+
+                // Inner point
+                const dot = document.createElementNS(svgNS, 'circle');
+                dot.setAttribute('cx', p.x);
+                dot.setAttribute('cy', p.y);
+                dot.setAttribute('r', '4');
+                dot.setAttribute('fill', '#a3e635');
+                dot.setAttribute('stroke', '#0f0d13');
+                dot.setAttribute('stroke-width', '2');
+                dot.style.opacity = '0';
+                dot.style.transition = `opacity 0.5s ease ${i * 0.1 + 0.2}s`;
+                pointsGroup.appendChild(dot);
+
+                setTimeout(() => {
+                    glow.style.opacity = '1';
+                    dot.style.opacity = '1';
+                }, 200);
+            }
+
+            // Draw labels
+            const labelsGroup = document.getElementById('radar-labels');
+            labelsGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const p = polarToXY(angle, maxR + 28);
+
+                const text = document.createElementNS(svgNS, 'text');
+                text.setAttribute('x', p.x);
+                text.setAttribute('y', p.y);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', 'rgba(255,255,255,0.6)');
+                text.setAttribute('font-size', '11');
+                text.setAttribute('font-weight', '700');
+                text.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+                text.setAttribute('letter-spacing', '0.5');
+                text.textContent = domains[i].short;
+                labelsGroup.appendChild(text);
+
+                // Score value below label
+                const scoreText = document.createElementNS(svgNS, 'text');
+                scoreText.setAttribute('x', p.x);
+                scoreText.setAttribute('y', p.y + 14);
+                scoreText.setAttribute('text-anchor', 'middle');
+                scoreText.setAttribute('dominant-baseline', 'middle');
+                scoreText.setAttribute('fill', scores[i] >= baselines[i] ? '#a3e635' : '#fb923c');
+                scoreText.setAttribute('font-size', '10');
+                scoreText.setAttribute('font-weight', '800');
+                scoreText.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+                scoreText.textContent = scores[i];
+                labelsGroup.appendChild(scoreText);
+            }
+
+            // Render skill breakdown list on the right
+            const breakdownEl = document.getElementById('radar-skill-breakdown');
+            breakdownEl.innerHTML = '';
+            domains.forEach((d, i) => {
+                const score = scores[i];
+                const baseline = baselines[i];
+                const diff = score - baseline;
+                const isAbove = diff >= 0;
+                const barColor = isAbove ? '#a3e635' : '#fb923c';
+                const statusText = isAbove ? `+${diff} above` : `${diff} below`;
+                const statusColor = isAbove ? 'text-emerald-400' : 'text-orange-400';
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] transition-all duration-200 group cursor-default';
+                row.innerHTML = `
+                    <div class="w-7 h-7 rounded-lg bg-[#1c1c1c] border border-[#2b2b2b] flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
+                        <span class="material-symbols-outlined text-[14px] text-on-surface-variant group-hover:text-primary transition-colors">${d.icon}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[11px] font-bold text-white tracking-wide">${d.label}</span>
+                            <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
+                        </div>
+                        <div class="w-full h-[4px] bg-[#1c1c1c] rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-1000 ease-out" style="width: ${score}%; background: ${barColor}; box-shadow: 0 0 8px ${barColor}40;"></div>
+                        </div>
+                        <div class="flex justify-between mt-0.5">
+                            <span class="text-[9px] text-on-surface-variant font-light">Baseline: ${baseline}</span>
+                            <span class="text-[9px] font-bold" style="color: ${barColor}">${score}/100</span>
+                        </div>
+                    </div>
+                `;
+                breakdownEl.appendChild(row);
+            });
         }
 
-        // Render Sidebar List
-        function renderHistorySidebar() {
+        // Save scan history details locally and synchronize
+        function saveToHistory(data) {
+            localStorage.setItem("latestCritiqueScan", JSON.stringify(data));
+            renderHistorySidebar(); // Refresh list from SQLite database
+        }
+
+        // Render Sidebar List from SQL Database
+        async function renderHistorySidebar() {
             const list = document.getElementById('historyList');
             if(!list) return;
 
-            let history = JSON.parse(localStorage.getItem("critiqueHistory") || "[]");
             list.innerHTML = "";
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/scans");
+                if (!response.ok) throw new Error("Database issue");
+                const history = await response.json();
 
-            if(history.length === 0) {
-                list.innerHTML = `<p class="text-label-sm font-light text-on-surface-variant p-2 sidebar-header-text">No previous scans found.</p>`;
-                return;
-            }
+                if(history.length === 0) {
+                    list.innerHTML = `<p class="text-label-sm font-light text-on-surface-variant p-2 sidebar-header-text">No previous scans found.</p>`;
+                    return;
+                }
 
-            history.forEach(item => {
-                const row = document.createElement('div');
-                row.className = "history-item bg-surface-container/30 border-l-4 border-transparent p-3 rounded-r-lg flex flex-col gap-1";
+                history.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "history-item bg-surface-container/30 border-l-4 border-transparent p-3 rounded-r-lg flex flex-col gap-1 cursor-pointer transition-all duration-200 hover:bg-surface-container/60 hover:border-primary/50";
+                    
+                    const score = item.overall_score || 0;
+                    let scoreColor = '#ef4444';
+                    if(score >= 90) scoreColor = '#10b981';
+                    else if(score >= 70) scoreColor = '#f59e0b';
+                    else if(score >= 40) scoreColor = '#f97316';
+
+                    let timeStr = "";
+                    try {
+                        const d = new Date(item.timestamp);
+                        timeStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    } catch(e) {
+                        timeStr = item.timestamp;
+                    }
+
+                    row.innerHTML = `
+                        <div class="text-label-md font-semibold text-on-surface truncate">${item.candidate_name}</div>
+                        <div class="flex justify-between items-center text-label-sm font-light text-on-surface-variant">
+                            <span class="text-[10px]">${timeStr}</span>
+                            <span style="color: ${scoreColor}" class="font-bold">${score}/100</span>
+                        </div>
+                    `;
+
+                    row.onclick = async () => {
+                        try {
+                            const detailRes = await fetch(`http://127.0.0.1:8000/api/scans/${item.id}`);
+                            if (!detailRes.ok) throw new Error("Failed to fetch scan details");
+                            const fullData = await detailRes.json();
+                            
+                            activeScanData = fullData;
+                            localStorage.setItem("latestCritiqueScan", JSON.stringify(fullData));
+                            transitionTo('RESULTS');
+                            renderResults(fullData);
+                        } catch(err) {
+                            alert("Failed to load historical scan details: " + err.message);
+                        }
+                    };
+
+                    list.appendChild(row);
+                });
+            } catch (err) {
+                console.warn("Failed to load history from SQLite, falling back to localStorage cache:", err);
+                let localHistory = JSON.parse(localStorage.getItem("critiqueHistory") || "[]");
+                if (localHistory.length === 0) {
+                    list.innerHTML = `<p class="text-label-sm font-light text-on-surface-variant p-2 sidebar-header-text">No previous scans found.</p>`;
+                    return;
+                }
                 
-                let scoreColor = '#ef4444';
-                if(item.score >= 90) scoreColor = '#10b981';
-                else if(item.score >= 70) scoreColor = '#f59e0b';
-                else if(item.score >= 40) scoreColor = '#f97316';
-
-                row.innerHTML = `
-                    <div class="text-label-md font-semibold text-on-surface truncate">${item.name}</div>
-                    <div class="flex justify-between items-center text-label-sm font-light text-on-surface-variant">
-                        <span>${item.timestamp}</span>
-                        <span style="color: ${scoreColor}" class="font-bold">${item.score}/100</span>
-                    </div>
-                `;
-
-                row.onclick = () => {
-                    activeScanData = item.full;
-                    localStorage.setItem("latestCritiqueScan", JSON.stringify(item.full));
-                    transitionTo('RESULTS');
-                    renderResults(item.full);
-                };
-
-                list.appendChild(row);
-            });
+                localHistory.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "history-item bg-surface-container/30 border-l-4 border-transparent p-3 rounded-r-lg flex flex-col gap-1 cursor-pointer";
+                    
+                    let scoreColor = '#ef4444';
+                    if(item.score >= 90) scoreColor = '#10b981';
+                    else if(item.score >= 70) scoreColor = '#f59e0b';
+                    
+                    row.innerHTML = `
+                        <div class="text-label-md font-semibold text-on-surface truncate">${item.name}</div>
+                        <div class="flex justify-between items-center text-label-sm font-light text-on-surface-variant">
+                            <span>${item.timestamp}</span>
+                            <span style="color: ${scoreColor}" class="font-bold">${item.score}/100</span>
+                        </div>
+                    `;
+                    row.onclick = () => {
+                        activeScanData = item.full;
+                        transitionTo('RESULTS');
+                        renderResults(item.full);
+                    };
+                    list.appendChild(row);
+                });
+            }
         }
 
         // Load latest scan on launch if exists
@@ -2055,11 +2576,9 @@
             if (latest) {
                 const data = JSON.parse(latest);
                 activeScanData = data;
-                transitionTo('RESULTS');
                 renderResults(data);
-            } else {
-                transitionTo('UPLOAD');
             }
+            transitionTo('UPLOAD');
         }
 
         // Reset to home upload panel
@@ -2082,7 +2601,6 @@
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            // Trigger beautiful PDF rendering
             html2pdf().set(config).from(element).save();
         }
 
@@ -2100,13 +2618,18 @@
             }
         }
 
-        // Clear Local Storage history
-        function clearHistory() {
-            if (confirm("Are you sure you want to clear your local resume scan history?")) {
+        // Clear Persistent History
+        async function clearHistory() {
+            if (confirm("Are you sure you want to clear your entire resume scan history from the SQL database?")) {
+                try {
+                    await fetch("http://127.0.0.1:8000/api/scans", { method: "DELETE" });
+                } catch(e) {
+                    console.warn("Server offline, clearing local cache only");
+                }
                 localStorage.removeItem("critiqueHistory");
                 localStorage.removeItem("latestCritiqueScan");
                 activeScanData = null;
-                renderHistorySidebar();
+                await renderHistorySidebar();
                 resetToUpload();
             }
         }

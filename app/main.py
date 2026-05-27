@@ -13,12 +13,17 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from app.parser import parse_file
 from app.ai_service import critique_resume
+from app.database import init_db, save_scan, get_all_scans, get_scan_by_id, clear_all_scans
 import traceback
 import httpx
 import xml.etree.ElementTree as ET
 import re
 
 app = FastAPI(title="Scope API")
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 # Allow CORS so your local HTML file can talk to this local server
 app.add_middleware(
@@ -121,16 +126,25 @@ async def analyze_resume(
     job_description: str = Form(None)
 ):
     try:
-        print(f"📂 Receiving file: {file.filename}")
+        print(f"[INFO] Receiving file: {file.filename}")
         contents = await file.read()
         
-        print("⚙️ Parsing file...")
+        print("[INFO] Parsing file...")
         parsed_data = await parse_file(contents, file.filename)
         
-        print("🤖 Sending to Local AI...")
+        print("[INFO] Sending to Local AI...")
         critique = await critique_resume(parsed_data, job_description)
-        print("✅ Analysis Complete!")
+        print("[INFO] Analysis Complete!")
         
+        # Persist results in SQL Database
+        critique["filename"] = file.filename
+        try:
+            scan_id = save_scan(critique)
+            critique["id"] = scan_id
+        except Exception as db_err:
+            print(f"[WARN] Database persistence failed: {db_err}")
+            critique["id"] = None
+            
         return critique
 
     except Exception as e:
@@ -138,3 +152,30 @@ async def analyze_resume(
         print(error_msg)
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=error_msg)
+
+@app.get("/api/scans")
+async def fetch_scans():
+    try:
+        return get_all_scans()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/scans/{scan_id}")
+async def fetch_scan(scan_id: int):
+    try:
+        scan = get_scan_by_id(scan_id)
+        if not scan:
+            raise HTTPException(status_code=404, detail="Scan record not found.")
+        return scan
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/scans")
+async def delete_all_scans():
+    try:
+        clear_all_scans()
+        return {"status": "success", "message": "All past scans deleted."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
