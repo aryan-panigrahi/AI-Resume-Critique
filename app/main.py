@@ -7,9 +7,9 @@ if sys.platform.startswith('win'):
     except Exception:
         pass
 
-#from dotenv import load_dotenv
-# load_dotenv()
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from dotenv import load_dotenv
+load_dotenv()
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from app.parser import parse_file
 from app.ai_service import critique_resume
@@ -54,7 +54,7 @@ async def get_tech_news():
             items = channel.findall("item")
             
             news = []
-            for item in items[:6]:
+            for item in items[:15]:
                 title = item.find("title").text if item.find("title") is not None else ""
                 link = item.find("link").text if item.find("link") is not None else ""
                 pub_date = item.find("pubDate").text if item.find("pubDate") is not None else ""
@@ -138,6 +138,7 @@ async def analyze_resume(
         
         # Persist results in SQL Database
         critique["filename"] = file.filename
+        critique["job_description"] = job_description or ""
         try:
             scan_id = save_scan(critique)
             critique["id"] = scan_id
@@ -152,6 +153,10 @@ async def analyze_resume(
         print(error_msg)
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=error_msg)
+
+import os
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "admin123")
+
 
 @app.get("/api/scans")
 async def fetch_scans():

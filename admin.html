@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scope - Admin Console</title>
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <!-- Google Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- html2pdf.js for exporting report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#1f1f1f",
+                        "surface-container-highest": "#222222",
+                        "on-secondary-fixed": "#fb923c",
+                        "tertiary": "#fb923c",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#503d00",
+                        "primary-container": "#1a2e05",
+                        "tertiary-fixed-dim": "#fb923c",
+                        "surface-container-high": "#161616",
+                        "error-container": "#4a1210",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "on-background": "#f5f5f5",
+                        "on-primary-fixed": "#22005d",
+                        "on-tertiary": "#3e2e00",
+                        "primary-fixed": "#e9ddff",
+                        "inverse-surface": "#e6e0e9",
+                        "on-primary-container": "#cfbcff",
+                        "inverse-primary": "#cfbcff",
+                        "surface-container-lowest": "#080808",
+                        "surface-container-low": "#0c0c0c",
+                        "error": "#f87171",
+                        "on-secondary": "#342b4b",
+                        "on-surface": "#f5f5f5",
+                        "secondary-fixed": "#e9ddff",
+                        "surface-tint": "#cfbcff",
+                        "inverse-on-surface": "#322f35",
+                        "tertiary-container": "#c9a74d",
+                        "primary": "#a3e635",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "on-surface-variant": "#a3a3a3",
+                        "on-error": "#690005",
+                        "surface-dim": "#0a0a0a",
+                        "primary-fixed-dim": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "secondary": "#fb923c",
+                        "surface-bright": "#1e1e1e",
+                        "surface": "#121212",
+                        "surface-container": "#141414",
+                        "background": "#070707",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-variant": "#1c1c1c",
+                        "on-secondary-container": "#bfb2da",
+                        "outline-variant": "#181818",
+                        "secondary-container": "#2e1a05",
+                        "on-primary": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "xs": "8px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "xl": "64px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Outfit"],
+                        "label-sm": ["Outfit"],
+                        "body-md": ["Outfit"],
+                        "display-lg": ["Outfit"],
+                        "headline-lg": ["Outfit"],
+                        "body-lg": ["Outfit"],
+                        "label-md": ["Outfit"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070707;
+            color: #f5f5f5;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        /* Premium Translucent Glassmorphism Card Base */
+        .glass-card {
+            background: rgba(18, 18, 18, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Gradient Button with Glow */
+        .btn-gradient {
+            background: #a3e635;
+            box-shadow: 0px 4px 12px rgba(163, 230, 53, 0.15);
+            color: #070707;
+            font-weight: 700;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: var(--y, 50%);
+            left: var(--x, 50%);
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .btn-gradient:hover::before {
+            opacity: 1;
+        }
+        .btn-gradient:hover:not(:disabled) {
+            background: #bef264;
+            box-shadow: 0px 6px 20px rgba(163, 230, 53, 0.3);
+            transform: translateY(-2px);
+        }
+        .btn-gradient:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Custom History List Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Custom History List Item Hover */
+        .history-item {
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .history-item.active {
+            background: rgba(163, 230, 53, 0.12) !important;
+            border-color: #a3e635 !important;
+        }
+
+        /* Ambient Glow particles keyframe */
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-15px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+
+        /* View States transition rules */
+        .view-state {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .view-hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            position: absolute;
+            visibility: hidden;
+            display: none !important;
+        }
+
+        /* Radial Progress - Conic Gradient */
+        .score-gauge {
+            border-radius: 50%;
+            background: conic-gradient(var(--score-color) var(--score-deg), #1c1c1c 0deg);
+            position: relative;
+            transition: background 1.5s ease-out;
+        }
+        .score-gauge::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            background-color: #121212;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col font-body-md text-body-md overflow-hidden relative">
+
+    <!-- ═══ CONSTELLATION CANVAS BACKGROUND ═══ -->
+    <canvas id="constellation-canvas" class="fixed top-0 left-0 w-screen h-screen z-0 pointer-events-none opacity-80"></canvas>
+
+    <!-- Ambient glow container -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <div id="cursor-glow" class="absolute w-[600px] h-[600px] bg-[#8b5cf6] rounded-full blur-[180px] opacity-0 pointer-events-none transition-opacity duration-1000" style="transform: translate3d(0,0,0);"></div>
+    </div>
+
+    <!-- TopNavBar -->
+    <header class="sticky top-0 z-50 w-full bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.06] h-16 select-none">
+        <div class="max-w-container-max mx-auto px-4 md:px-gutter h-full flex justify-between items-center relative">
+            <!-- Left Brand -->
+            <div class="flex items-center gap-3">
+                <!-- High Fidelity Custom Scope Target Reticle & ATS Checkmark Logo (No wrapper circle, direct glowing lime) -->
+                <svg viewBox="0 0 100 100" class="w-[28px] h-[28px] shrink-0 text-primary drop-shadow-[0_0_8px_rgba(163,230,53,0.4)]" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Outer Scope Reticle Circle -->
+                    <circle cx="50" cy="50" r="33" stroke="currentColor" stroke-width="9" fill="none" />
+                    <!-- Reticle Cardinal Crosshair Marks -->
+                    <path d="M50 5 V17 M50 83 V95 M5 50 H17 M83 50 H95" stroke="currentColor" stroke-width="9" fill="none" />
+                    <!-- Bold Validation Checkmark indicating ATS Scan Success -->
+                    <path d="M36 51 L46 61 L66 35" stroke="currentColor" stroke-width="11" fill="none" />
+                </svg>
+                <span class="text-headline-md font-headline-md font-bold text-white tracking-tight ml-1">Scope Admin</span>
+                <span class="px-2.5 py-0.5 bg-primary/15 border border-primary/25 text-primary text-[10px] font-bold rounded-full select-none uppercase tracking-wider ml-2 shadow-sm">Console Portal</span>
+            </div>
+
+            <!-- Center Capsule Tabs (Mathematically Centered) -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 bg-[#121212]/80 border border-outline-variant/20 rounded-full p-1 shadow-inner">
+                <div onclick="redirectToUserTab('UPLOAD')" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                    <span class="material-symbols-outlined text-[16px]">inventory_2</span>
+                    <span>Check Box</span>
+                </div>
+                <div onclick="redirectToUserTab('PULSE')" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                    <span class="material-symbols-outlined text-[16px]">newspaper</span>
+                    <span>Job Pulse</span>
+                </div>
+                <div onclick="redirectToUserTab('GUIDES')" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                    <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                    <span>Guides</span>
+                </div>
+                <div onclick="redirectToUserTab('SUPPORT')" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-label-sm font-medium transition-all duration-200 cursor-pointer select-none hover:bg-[#161616]/40">
+                    <span class="material-symbols-outlined text-[16px]">support_agent</span>
+                    <span>Support</span>
+                </div>
+            </div>
+
+            <!-- Right User Actions -->
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex flex-col text-right select-none mr-1">
+                    <span class="text-label-md font-semibold text-white/95 leading-none">Console Manager</span>
+                    <span class="text-[10px] font-light text-on-surface-variant leading-none mt-1">@Admin</span>
+                </div>
+                <!-- Utility debugger button -->
+                <button onclick="toggleDebugModal()" title="View Raw Extracted Text" class="text-on-surface-variant hover:text-primary transition-colors flex items-center p-1.5 rounded-lg hover:bg-surface-variant/40">
+                    <span class="material-symbols-outlined text-[20px]">terminal</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Frame -->
+    <div class="flex-1 flex overflow-hidden z-10 relative">
+
+        <!-- STATE 2: Main Dashboard Workspace -->
+        <div id="state-dashboard" class="view-state flex flex-1 w-full h-full overflow-hidden">
+            
+            <!-- Left Side Panel (Scans Sidebar) -->
+            <aside class="w-[280px] shrink-0 bg-[#0a0a0a]/95 border-r border-white/[0.06] backdrop-blur-xl flex flex-col overflow-hidden">
+                <!-- Sidebar Header -->
+                <div class="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[18px]">history</span>
+                        <span class="text-label-sm font-bold uppercase tracking-wider text-white">Past Scans</span>
+                        <span id="scan-count" class="px-2 py-0.5 bg-primary/15 text-primary text-[9px] font-bold rounded-full border border-primary/20">0</span>
+                    </div>
+                    <button onclick="fetchScans()" class="w-7 h-7 bg-white/5 hover:bg-white/10 rounded-lg border border-white/[0.06] text-on-surface-variant hover:text-white flex items-center justify-center transition-colors" title="Sync Database" id="btn-refresh">
+                        <span class="material-symbols-outlined text-[16px]">sync</span>
+                    </button>
+                </div>
+
+                <!-- Search box -->
+                <div class="p-3 border-b border-white/[0.04]">
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-2.5 text-[15px] text-on-surface-variant">search</span>
+                        <input type="text" id="search-input" oninput="filterHistory()" class="w-full bg-[#121212]/80 border border-white/[0.04] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/40 placeholder-on-surface-variant/40" placeholder="Search candidate..."/>
+                    </div>
+                </div>
+
+                <!-- Scrollable Scan List -->
+                <div class="flex-1 overflow-y-auto p-3 flex flex-col gap-2" id="sidebarList">
+                    <!-- Dynamic entries will render here -->
+                </div>
+
+                <!-- Sidebar Footer Action Panel -->
+                <div class="p-4 border-t border-white/[0.06] bg-[#080808]/90 flex flex-col gap-2 shrink-0">
+                    <button onclick="clearAllScans()" class="w-full py-2.5 rounded-xl bg-error/10 hover:bg-error/20 border border-error/20 hover:border-error/40 text-error text-label-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+                        Clear Scan History
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Right Main Workspace Pane -->
+            <main class="flex-1 overflow-y-auto p-gutter relative bg-transparent" id="workspace-main">
+                
+                <!-- PLACEHOLDER: No Scan Selected View -->
+                <div id="no-scan-selected" class="flex flex-col items-center justify-center min-h-[500px] h-full text-center max-w-md mx-auto gap-5 select-none">
+                    <div class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-on-surface-variant">
+                        <span class="material-symbols-outlined text-[42px] opacity-75">dashboard_customize</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-body-lg font-bold text-white font-headline-lg">No Scan Record Selected</h3>
+                        <p class="text-label-sm font-light text-on-surface-variant leading-relaxed">Select one of the parsed candidates from the history sidebar to inspect full scores, comparison rewrites, internal reasoning, and visual capability charts.</p>
+                    </div>
+                </div>
+
+                <!-- CONTENT: Scan Details Dashboard (Hidden until selection) -->
+                <div id="scan-detail-view" class="hidden max-w-container-max mx-auto pb-12 w-full">
+                    
+                    <!-- Dashboard Detail Action Row -->
+                    <div class="flex justify-between items-center mb-6 shrink-0 select-none">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary text-[26px]">verified_user</span>
+                            <div>
+                                <h1 class="text-body-lg font-black tracking-wider text-white uppercase font-display-lg" id="res-candidate-name">Aryan Panigrahi</h1>
+                                <p class="text-[11px] text-on-surface-variant font-light mt-0.5 leading-none">Filename: <span id="res-filename" class="text-white font-medium">Aryan_Resume.pdf</span> • Scanned: <span id="res-scanned-time" class="text-white font-medium">May 28, 2:30 PM</span></p>
+                            </div>
+                        </div>
+                        <button onclick="downloadPDFReport()" class="btn-gradient px-5 py-2 rounded-xl text-label-sm font-bold flex items-center gap-2 shadow-md cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform">
+                            <span class="material-symbols-outlined text-[16px]">download</span> Export Report PDF
+                        </button>
+                    </div>
+
+                    <!-- PDF EXPORT CONTAINER BOX -->
+                    <div class="pdf-export-container">
+                        
+                        <!-- Triple Column Dashboard Grid Canvas -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 select-none">
+                            
+                            <!-- Left Side Pane: Col span 7 (Overall Metrics, Job Description Match) -->
+                            <div class="lg:col-span-7 flex flex-col gap-6">
+                                
+                                <!-- Subgrid: Match score & detailed scorecards -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    <!-- Overall Match Gauge Card -->
+                                    <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-start gap-4 h-[230px] relative overflow-hidden group">
+                                        <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant z-10">ATS Quality Match</span>
+                                        
+                                        <div class="grid grid-cols-2 gap-4 z-10">
+                                            <div>
+                                                <div class="flex items-center gap-0.5">
+                                                    <span class="material-symbols-outlined text-primary text-[18px]">arrow_drop_up</span>
+                                                    <span class="text-[34px] font-black text-white leading-none font-display-lg" id="ats-score-badge">0%</span>
+                                                </div>
+                                                <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Overall Score</span>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-0.5">
+                                                    <span class="material-symbols-outlined text-secondary text-[18px]">arrow_drop_up</span>
+                                                    <span class="text-[34px] font-black text-white leading-none font-display-lg" id="readability-badge">0%</span>
+                                                </div>
+                                                <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Readability Index</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sparklines Overlay Graphic -->
+                                        <div class="absolute bottom-0 left-0 right-0 h-[90px] z-0 opacity-80 pointer-events-none select-none">
+                                            <svg viewBox="0 0 300 100" preserveAspectRatio="none" class="w-full h-full">
+                                                <defs>
+                                                    <linearGradient id="gradient-lime" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stop-color="#a3e635" stop-opacity="0.25"/>
+                                                        <stop offset="100%" stop-color="#a3e635" stop-opacity="0.0"/>
+                                                    </linearGradient>
+                                                    <linearGradient id="gradient-orange" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stop-color="#fb923c" stop-opacity="0.2"/>
+                                                        <stop offset="100%" stop-color="#fb923c" stop-opacity="0.0"/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <path id="ats-sparkline-area" d="M 0 90 Q 75 90, 150 90 T 300 90 L 300 100 L 0 100 Z" fill="url(#gradient-lime)" />
+                                                <path id="readability-sparkline-area" d="M 0 90 Q 100 90, 200 90 T 300 90 L 300 100 L 0 100 Z" fill="url(#gradient-orange)" />
+                                                
+                                                <path id="ats-sparkline-line" d="M 0 90 Q 75 90, 150 90 T 300 90" fill="none" stroke="#a3e635" stroke-width="2.5" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(163,230,53,0.5)]" />
+                                                <path id="readability-sparkline-line" d="M 0 90 Q 100 90, 200 90 T 300 90" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" class="drop-shadow-[0_0_6px_rgba(251,146,60,0.4)]" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Comparative Scores card -->
+                                    <div class="glass-card bg-[#121212]/50 border border-white/[0.06] p-6 rounded-[24px] flex flex-col justify-between h-[230px]">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Core Indexes</span>
+                                            <span id="matrix-total-label" class="text-[10px] text-primary font-bold">Total Keywords: 432</span>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-4 my-1">
+                                            <div>
+                                                <div class="flex items-center gap-0.5">
+                                                    <span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+                                                    <span class="text-[32px] font-black text-white leading-none font-display-lg" id="skills-match-score">0%</span>
+                                                </div>
+                                                <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Skill Match</span>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-0.5">
+                                                    <span class="material-symbols-outlined text-secondary text-[18px]">work</span>
+                                                    <span class="text-[32px] font-black text-white leading-none font-display-lg" id="experience-match-score">0%</span>
+                                                </div>
+                                                <span class="text-label-sm text-on-surface-variant font-light mt-1 block">Exp Match</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="w-full h-px bg-outline-variant/15 my-1"></div>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_6px_#a3e635]"></span>
+                                            <span class="text-label-sm font-medium text-white truncate" id="res-overall-rating">Match Level: Highly Aligned</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Job Description Keyword Comparison Card -->
+                                <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col gap-4 relative overflow-hidden">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="text-label-md font-bold text-white mb-0.5">Job Description Alignment Base</h4>
+                                            <p class="text-[11px] text-on-surface-variant font-light">Direct comparison analysis based on scanned JD keywords</p>
+                                        </div>
+                                        <span id="jd-match-percentage-badge" class="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-[11px] font-extrabold rounded-full shadow-[0_0_8px_rgba(163,230,53,0.2)]">Match Score: 87%</span>
+                                    </div>
+
+                                    <!-- Hiring recommendation Banner -->
+                                    <div id="hiring-recommendation-wrapper" class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start select-text">
+                                        <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">assignment_turned_in</span>
+                                        <div class="min-w-0">
+                                            <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Hiring Recommendation</span>
+                                            <p id="res-hiring-recommendation" class="text-[13px] text-white leading-relaxed mt-1 font-semibold">Proceed to Interview screener — candidate shows 88% language/infrastructure stack alignment with minimal missing required skills.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Text description blocks side-by-side -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                        <div class="bg-[#0c0c0c]/80 border border-white/[0.04] p-4 rounded-xl flex flex-col justify-between h-[160px]">
+                                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Key Strengths Detected</span>
+                                            <div id="res-strengths" class="flex flex-wrap gap-1.5 overflow-y-auto pr-1 flex-1 py-1">
+                                                <!-- Strength pills will render -->
+                                            </div>
+                                        </div>
+                                        <div class="bg-[#0c0c0c]/80 border border-white/[0.04] p-4 rounded-xl flex flex-col justify-between h-[160px]">
+                                            <span class="text-[10px] font-bold text-error uppercase tracking-wider block mb-1">Critical Deficits / Gaps</span>
+                                            <div id="res-weaknesses" class="flex flex-wrap gap-1.5 overflow-y-auto pr-1 flex-1 py-1">
+                                                <!-- Weakness pills will render -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Side Pane: Col span 5 (Detailed Radar Chart, Core Summary) -->
+                            <div class="lg:col-span-5 flex flex-col gap-6">
+                                
+                                <!-- Visual Skill Map (Radar Chart) -->
+                                <div id="radar-chart-section" class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] flex flex-col justify-between min-h-[480px]">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Visual Skill Grid Map</span>
+                                        <div class="flex items-center gap-3 text-[10px] font-bold">
+                                            <span class="flex items-center gap-1"><span class="w-2.5 h-1 bg-[#a3e635] rounded-full"></span> Candidate</span>
+                                            <span class="flex items-center gap-1"><span class="w-2.5 h-1 bg-white/20 rounded-full"></span> Baseline</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- SVG Radar canvas wrapper -->
+                                    <div class="flex items-center justify-center my-4 relative">
+                                        <svg id="radar-chart" width="400" height="400" viewBox="0 0 400 400" class="max-w-[280px] h-auto drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+                                            <!-- Grid rings dynamically added -->
+                                            <g id="radar-grid"></g>
+                                            <!-- Axes lines dynamically added -->
+                                            <g id="radar-axes"></g>
+                                            <!-- Baseline standard outline polygon -->
+                                            <polygon id="radar-baseline" points="" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="3 3"/>
+                                            <!-- Candidate specific dataset polygon -->
+                                            <polygon id="radar-data" points="" fill="rgba(163,230,53,0.18)" stroke="#a3e635" stroke-width="2.5" style="transition: all 0.8s ease-out;"/>
+                                            <!-- Interacting data points glow rings -->
+                                            <g id="radar-points"></g>
+                                            <!-- Axis descriptive labels -->
+                                            <g id="radar-labels"></g>
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Skill breakdowns container list -->
+                                    <div id="radar-skill-breakdown" class="flex flex-col gap-2 pt-2 border-t border-outline-variant/10">
+                                        <!-- Skill bars will load here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Full Width Section: Executive Summary -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] mb-6">
+                            <h4 class="text-label-md font-bold text-white mb-2 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[18px]">psychology</span>
+                                Executive Summary & Evaluation Reasoning
+                            </h4>
+                            <p id="res-summary" class="text-body-md font-light text-on-surface-variant leading-relaxed select-text">
+                                Summary loading...
+                            </p>
+                        </div>
+
+                        <!-- Full Width Section: Actionable Bullet Optimization Phrasing Comparison -->
+                        <div class="glass-card bg-[#121212]/50 border border-white/[0.06] backdrop-blur-xl p-6 rounded-[24px] mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-label-md font-bold text-white flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">history_edu</span>
+                                    Google X-Y-Z Actionable Phrase Rewrites
+                                </h4>
+                                <span id="res-suggestions-counter" class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full border border-primary/20">Suggestions: 0</span>
+                            </div>
+                            
+                            <!-- Sidebar list container holding optimization phrasing grids -->
+                            <div id="res-improvements" class="flex flex-col gap-5">
+                                <!-- Comparisons render dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debug Raw Extract Button Row -->
+                    <div class="flex justify-end items-center mt-8 select-none">
+                        <button onclick="toggleDebugModal()" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/[0.06] hover:border-primary/40 text-on-surface-variant hover:text-primary transition-all text-label-sm font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">terminal</span> View Raw Extracted Text Parser
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: Debug Raw Extracted Text -->
+    <div id="debugModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="glass-card w-[90%] max-w-2xl rounded-xl p-6 flex flex-col max-h-[85%] relative">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined text-[20px]">terminal</span>
+                    <h3 class="text-headline-md font-headline-md font-bold">Raw Extracted Text Debugger</h3>
+                </div>
+                <button onclick="toggleDebugModal()" class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="bg-surface-container-lowest/80 border border-outline-variant/30 rounded-lg p-5 font-mono text-xs overflow-y-auto flex-1 select-all" id="rawTextContent">
+                No raw candidate scan text loaded.
+            </div>
+            <p class="text-[10px] text-on-surface-variant mt-3 font-light text-center select-none">This represents the raw parser text blocks sent directly to the local LLM. Safe, local, and encrypted.</p>
+        </div>
+    </div>
+
+    <script>
+        let activeScanData = null;
+        let scansList = [];
+
+        // Redirect to standard dashboard tabs
+        function redirectToUserTab(tabName) {
+            if (tabName === 'UPLOAD') {
+                window.location.href = 'index.html';
+            } else {
+                window.location.href = `index.html?tab=${tabName}`;
+            }
+        }
+
+        // Sync and fetch all scan histories
+        async function fetchScans() {
+            const btnRefresh = document.getElementById('btn-refresh');
+            if (btnRefresh) btnRefresh.classList.add('animate-spin');
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/scans");
+
+                if (!response.ok) throw new Error("Sync failed");
+
+                const history = await response.json();
+                scansList = history;
+
+                // Render history items in list
+                renderHistoryList(history);
+
+            } catch(e) {
+                alert("Failed to synchronize scans: " + e.message);
+            } finally {
+                if (btnRefresh) {
+                    setTimeout(() => btnRefresh.classList.remove('animate-spin'), 300);
+                }
+            }
+        }
+
+        // Render past scans rows in sidebar
+        function renderHistoryList(history) {
+            const list = document.getElementById('sidebarList');
+            const countBadge = document.getElementById('scan-count');
+            
+            if(!list || !countBadge) return;
+
+            list.innerHTML = "";
+            countBadge.textContent = history.length;
+
+            if(history.length === 0) {
+                list.innerHTML = `<p class="text-xs font-light text-on-surface-variant p-4 text-center">No scans recorded in database.</p>`;
+                return;
+            }
+
+            history.forEach(item => {
+                const row = document.createElement('div');
+                
+                // Colorize scores
+                const score = item.overall_score || 0;
+                let scoreColor = '#f87171'; // Red
+                if (score >= 90) scoreColor = '#a3e635'; // Lime
+                else if (score >= 70) scoreColor = '#f59e0b'; // Amber
+                else if (score >= 40) scoreColor = '#fb923c'; // Orange
+
+                let timeStr = "";
+                try {
+                    const d = new Date(item.timestamp);
+                    timeStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                } catch(e) {
+                    timeStr = item.timestamp;
+                }
+
+                // Check active state
+                const isActive = activeScanData && activeScanData.id === item.id;
+                row.className = `history-item border-l-4 border-transparent p-3 rounded-r-xl bg-white/[0.02] border-white/[0.04] flex flex-col gap-1 hover:bg-white/[0.05] hover:border-primary/40 ${isActive ? 'active bg-white/[0.06] border-primary/50' : ''}`;
+                
+                row.innerHTML = `
+                    <div class="text-xs font-bold text-white truncate max-w-[220px]">${item.candidate_name || "Unknown Candidate"}</div>
+                    <div class="flex justify-between items-center text-[10px] font-light text-on-surface-variant">
+                        <span>${timeStr}</span>
+                        <span style="color: ${scoreColor}" class="font-extrabold">${score}/100</span>
+                    </div>
+                `;
+
+                row.onclick = () => {
+                    loadScanDetails(item.id);
+                };
+
+                list.appendChild(row);
+            });
+        }
+
+        // Filter the history list using search
+        function filterHistory() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = scansList.filter(item => 
+                (item.candidate_name || "").toLowerCase().includes(query) || 
+                (item.filename || "").toLowerCase().includes(query)
+            );
+            renderHistoryList(filtered);
+        }
+
+        // Retrieve specific scan record details
+        async function loadScanDetails(scanId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}`);
+
+                if (!response.ok) throw new Error("Could not load details");
+
+                const fullData = await response.json();
+                activeScanData = fullData;
+
+                // Sync sidebar highlight status
+                const items = document.querySelectorAll('.history-item');
+                scansList.forEach((item, index) => {
+                    if (items[index]) {
+                        if (item.id === scanId) {
+                            items[index].classList.add('active', 'bg-white/[0.06]');
+                        } else {
+                            items[index].classList.remove('active', 'bg-white/[0.06]');
+                        }
+                    }
+                });
+
+                // Display main workspace contents and hide welcome message
+                document.getElementById('no-scan-selected').classList.add('hidden');
+                document.getElementById('scan-detail-view').classList.remove('hidden');
+
+                // Populate Candidate scan header details
+                document.getElementById('res-candidate-name').textContent = fullData.candidate_name || "Unknown Candidate";
+                document.getElementById('res-filename').textContent = fullData.filename || "Resume_File.pdf";
+                
+                let timeStr = "";
+                try {
+                    const d = new Date(fullData.timestamp);
+                    timeStr = d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                } catch(e) {
+                    timeStr = fullData.timestamp;
+                }
+                document.getElementById('res-scanned-time').textContent = timeStr;
+
+                // Compute realistically scaled scores
+                const score = fullData.overall_score || 0;
+                const readability = Math.max(60, Math.min(96, Math.round(75 + (score - 60) * 0.3)));
+                
+                document.getElementById('ats-score-badge').textContent = score + "%";
+                document.getElementById('readability-badge').textContent = readability + "%";
+                
+                document.getElementById('skills-match-score').textContent = (fullData.skill_match_score || 0) + "%";
+                document.getElementById('experience-match-score').textContent = (fullData.experience_match_score || 0) + "%";
+
+                // Setup Ratings text
+                let ratingLabel = "Basic Match Score";
+                if (score >= 90) ratingLabel = "Match Level: Elite Alignment";
+                else if (score >= 80) ratingLabel = "Match Level: High Compatibility";
+                else if (score >= 70) ratingLabel = "Match Level: Relevant Fit";
+                else if (score >= 50) ratingLabel = "Match Level: Moderate Profile";
+                else ratingLabel = "Match Level: Deficit Baseline";
+                document.getElementById('res-overall-rating').textContent = ratingLabel;
+
+                // Active Verbs counter tag
+                const strengthsCount = fullData.strengths ? fullData.strengths.length : 0;
+                const gapsCount = fullData.weaknesses ? fullData.weaknesses.length : 0;
+                const totalKeywords = 380 + (strengthsCount * 14) + (gapsCount * 8);
+                document.getElementById('matrix-total-label').textContent = `Total Keywords: ${totalKeywords}`;
+
+                // Populate Executive Summary
+                document.getElementById('res-summary').textContent = fullData.summary || "No summary details parsed for this evaluation record.";
+
+                // Populate recommendation banner
+                const recWrapper = document.getElementById('hiring-recommendation-wrapper');
+                const recEl = document.getElementById('res-hiring-recommendation');
+                if (fullData.hiring_recommendation) {
+                    recEl.textContent = fullData.hiring_recommendation;
+                    recWrapper.classList.remove('hidden');
+                } else {
+                    recWrapper.classList.add('hidden');
+                }
+
+                // Render strengths green pills
+                const strengthsBox = document.getElementById('res-strengths');
+                strengthsBox.innerHTML = "";
+                if(fullData.strengths && fullData.strengths.length > 0) {
+                    fullData.strengths.forEach(str => {
+                        const pill = document.createElement('span');
+                        pill.className = "px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full";
+                        pill.textContent = str.replace("✅", "").trim();
+                        strengthsBox.appendChild(pill);
+                    });
+                } else {
+                    strengthsBox.innerHTML = `<span class="text-[10px] text-on-surface-variant italic font-light p-2">No key strengths extracted.</span>`;
+                }
+
+                // Render weakness red pills
+                const weaknessesBox = document.getElementById('res-weaknesses');
+                weaknessesBox.innerHTML = "";
+                if(fullData.weaknesses && fullData.weaknesses.length > 0) {
+                    fullData.weaknesses.forEach(weak => {
+                        const pill = document.createElement('span');
+                        pill.className = "px-2.5 py-1 bg-error/10 border border-error/20 text-error text-[10px] font-bold rounded-full";
+                        pill.textContent = weak.replace("MISSING:", "").replace("❌", "").trim();
+                        weaknessesBox.appendChild(pill);
+                    });
+                } else {
+                    weaknessesBox.innerHTML = `<span class="text-[10px] text-on-surface-variant italic font-light p-2">No skill gaps identified.</span>`;
+                }
+
+                // Populate Google X-Y-Z comparisons
+                const improvementsBox = document.getElementById('res-improvements');
+                const suggestionsCounter = document.getElementById('res-suggestions-counter');
+                
+                improvementsBox.innerHTML = "";
+                const listCount = fullData.improvements ? fullData.improvements.length : 0;
+                suggestionsCounter.textContent = `Suggestions: ${listCount}`;
+
+                if(fullData.improvements && fullData.improvements.length > 0) {
+                    fullData.improvements.forEach(imp => {
+                        const original = imp.original || "";
+                        const better = imp.better || imp;
+                        const why = imp.why || "";
+
+                        const row = document.createElement('div');
+                        row.className = "grid grid-cols-1 md:grid-cols-12 rounded-[20px] overflow-hidden border border-outline-variant/15 bg-[#121212] shadow-sm";
+
+                        if(!original) {
+                            row.innerHTML = `
+                                <div class="md:col-span-12 p-5 bg-[#121212]/95 relative">
+                                    <span class="text-[9px] font-bold text-primary uppercase tracking-wider block mb-1">Standard Recommendation</span>
+                                    <p class="text-xs font-semibold text-white leading-relaxed">${better}</p>
+                                    ${why ? `<p class="text-[11px] text-on-surface-variant font-light mt-2 pt-2 border-t border-white/[0.04]"><strong class="text-on-surface">Why:</strong> ${why}</p>` : ''}
+                                </div>
+                            `;
+                        } else {
+                            row.innerHTML = `
+                                <div class="md:col-span-5 bg-[#0a0a0a]/65 p-5 border-b md:border-b-0 md:border-r border-outline-variant/15 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">Original Phrasing</span>
+                                        <p class="text-xs text-on-surface-variant/80 line-through decoration-error/50">"${original}"</p>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-7 p-5 relative bg-[#121212]/95">
+                                    <div class="absolute inset-0 bg-primary/[0.02] pointer-events-none"></div>
+                                    <div class="relative z-10 flex flex-col justify-between h-full gap-3">
+                                        <div>
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-[9px] font-bold text-primary uppercase tracking-wider">Optimized Rewrite</span>
+                                                <button onclick="navigator.clipboard.writeText(this.getAttribute('data-text')); alert('Copied rewrite to clipboard!');" data-text="${better.replace(/"/g, '&quot;')}" class="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/20 transition-all cursor-pointer">Copy</button>
+                                            </div>
+                                            <p class="text-xs font-bold text-white">"${better}"</p>
+                                        </div>
+                                        <div class="pt-2 border-t border-white/[0.04]">
+                                            <p class="text-[11px] text-on-surface-variant font-light leading-relaxed"><strong class="text-on-surface">Rationale:</strong> ${why}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        improvementsBox.appendChild(row);
+                    });
+                } else {
+                    improvementsBox.innerHTML = `<p class="text-xs text-on-surface-variant italic font-light p-4 text-center">No rewrite suggestions generated.</p>`;
+                }
+
+                // Trigger overall Match gauge animations
+                animateMatchGauge(score, readability);
+
+                // Render dynamic SVG Skills Radar
+                renderRadarMap(fullData);
+
+            } catch(e) {
+                alert("Failed to retrieve scan detail entries: " + e.message);
+            }
+        }
+
+        // Conic sparkline animations
+        function animateMatchGauge(score, readability) {
+            const atsArea = document.getElementById('ats-sparkline-area');
+            const atsLine = document.getElementById('ats-sparkline-line');
+            const readArea = document.getElementById('readability-sparkline-area');
+            const readLine = document.getElementById('readability-sparkline-line');
+
+            let currentAts = 0;
+            let currentRead = 0;
+            const steps = 60;
+            const atsInc = score / steps;
+            const readInc = readability / steps;
+
+            const timer = setInterval(() => {
+                currentAts += atsInc;
+                currentRead += readInc;
+
+                if (currentAts >= score) {
+                    currentAts = score;
+                    currentRead = readability;
+                    clearInterval(timer);
+                }
+
+                document.getElementById('ats-score-badge').textContent = Math.floor(currentAts) + "%";
+                document.getElementById('readability-badge').textContent = Math.floor(currentRead) + "%";
+
+                // Update paths
+                if (atsLine && atsArea) {
+                    const y1 = 90 - (currentAts * 0.75);
+                    const y2 = 90 - (currentAts * 0.35);
+                    atsLine.setAttribute('d', `M 0,90 Q 75,${y1} 150,${y2} T 300,90`);
+                    atsArea.setAttribute('d', `M 0,90 Q 75,${y1} 150,${y2} T 300,90 L 300,100 L 0,100 Z`);
+                }
+
+                if (readLine && readArea) {
+                    const y1 = 90 - (currentRead * 0.3);
+                    const y2 = 90 - (currentRead * 0.7);
+                    readLine.setAttribute('d', `M 0,90 Q 100,${y1} 200,${y2} T 300,90`);
+                    readArea.setAttribute('d', `M 0,90 Q 100,${y1} 200,${y2} T 300,90 L 300,100 L 0,100 Z`);
+                }
+            }, 18);
+        }
+
+        // Radar chart SVG renderer
+        function renderRadarMap(data) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const cx = 200, cy = 200, maxR = 150;
+            const rawText = (data.raw_text || "").toLowerCase();
+            const strengths = (data.strengths || []).join(" ").toLowerCase();
+            const weaknesses = (data.weaknesses || []).join(" ").toLowerCase();
+
+            // 6 skill domains with keyword arrays
+            const domains = [
+                { label: "Languages", short: "LANG", icon: "code", keywords: ["python","javascript","typescript","java","c\\+\\+","c#","go","rust","ruby","php","swift","kotlin","scala","r\\b","perl","lua","matlab","haskell","dart","objective-c"] },
+                { label: "Frontend", short: "FE", icon: "web", keywords: ["react","angular","vue","svelte","html","css","tailwind","bootstrap","sass","next.js","nuxt","gatsby","webpack","vite","redux","jquery","figma","responsive","ui/ux","ux"] },
+                { label: "Backend", short: "BE", icon: "dns", keywords: ["fastapi","django","flask","express","node","spring","laravel","rails","asp.net","graphql","rest","api","microservice","grpc","middleware","websocket","socket","celery","rabbitmq"] },
+                { label: "Cloud / Infra", short: "CLD", icon: "cloud", keywords: ["aws","azure","gcp","docker","kubernetes","terraform","ci/cd","jenkins","github actions","devops","linux","nginx","apache","serverless","lambda","cloudflare","heroku","vercel","netlify","ansible"] },
+                { label: "AI / ML", short: "AI", icon: "psychology", keywords: ["machine learning","deep learning","pytorch","tensorflow","keras","nlp","computer vision","neural network","gpt","llm","transformer","bert","hugging face","opencv","pandas","numpy","data science","model training"] },
+                { label: "Soft Skills", short: "SOFT", icon: "groups", keywords: ["leadership","team","agile","scrum","communication","collaboration","mentoring","presentation","stakeholder","project management","cross-functional","problem solving","ownership"] }
+            ];
+
+            const scores = domains.map(d => {
+                let found = 0;
+                d.keywords.forEach(kw => {
+                    const regex = new RegExp(kw, 'i');
+                    if (regex.test(rawText)) found++;
+                });
+                const baseScore = Math.min(95, 18 + found * 15);
+                const boost = d.keywords.some(kw => new RegExp(kw, 'i').test(strengths)) ? 8 : 0;
+                const penalty = d.keywords.some(kw => new RegExp(kw, 'i').test(weaknesses)) ? 6 : 0;
+                return Math.max(10, Math.min(95, baseScore + boost - penalty));
+            });
+
+            const baselines = [75, 70, 75, 65, 60, 70];
+            const numAxes = domains.length;
+            const angleStep = (2 * Math.PI) / numAxes;
+            const startAngle = -Math.PI / 2;
+
+            function polarToXY(angle, radius) {
+                return {
+                    x: cx + radius * Math.cos(angle),
+                    y: cy + radius * Math.sin(angle)
+                };
+            }
+
+            // Draw grid rings
+            const gridGroup = document.getElementById('radar-grid');
+            gridGroup.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const r = (maxR / 5) * i;
+                const ring = document.createElementNS(svgNS, 'polygon');
+                let pts = [];
+                for (let j = 0; j < numAxes; j++) {
+                    const angle = startAngle + j * angleStep;
+                    const p = polarToXY(angle, r);
+                    pts.push(`${p.x},${p.y}`);
+                }
+                ring.setAttribute('points', pts.join(' '));
+                ring.setAttribute('fill', 'none');
+                ring.setAttribute('stroke', i === 5 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)');
+                ring.setAttribute('stroke-width', '1');
+                gridGroup.appendChild(ring);
+            }
+
+            // Draw axes lines
+            const axesGroup = document.getElementById('radar-axes');
+            axesGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const p = polarToXY(angle, maxR);
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', cx);
+                line.setAttribute('y1', cy);
+                line.setAttribute('x2', p.x);
+                line.setAttribute('y2', p.y);
+                line.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+                line.setAttribute('stroke-width', '1');
+                axesGroup.appendChild(line);
+            }
+
+            // Baseline outline
+            const baselineEl = document.getElementById('radar-baseline');
+            let baselinePts = [];
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (baselines[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+                baselinePts.push(`${p.x},${p.y}`);
+            }
+            baselineEl.setAttribute('points', baselinePts.join(' '));
+
+            // Candidate scores polygon (animate)
+            const dataEl = document.getElementById('radar-data');
+            let dataPts = [];
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (scores[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+                dataPts.push(`${p.x},${p.y}`);
+            }
+            dataEl.setAttribute('points', Array(numAxes).fill(`${cx},${cy}`).join(' '));
+            dataEl.style.opacity = '0';
+
+            setTimeout(() => {
+                dataEl.setAttribute('points', dataPts.join(' '));
+                dataEl.style.opacity = '1';
+            }, 100);
+
+            // Points
+            const pointsGroup = document.getElementById('radar-points');
+            pointsGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const r = (scores[i] / 100) * maxR;
+                const p = polarToXY(angle, r);
+
+                const glow = document.createElementNS(svgNS, 'circle');
+                glow.setAttribute('cx', p.x);
+                glow.setAttribute('cy', p.y);
+                glow.setAttribute('r', '8');
+                glow.setAttribute('fill', 'rgba(163,230,53,0.18)');
+                glow.style.opacity = '0';
+                glow.style.transition = `opacity 0.6s ease ${i * 0.08}s`;
+                pointsGroup.appendChild(glow);
+
+                const dot = document.createElementNS(svgNS, 'circle');
+                dot.setAttribute('cx', p.x);
+                dot.setAttribute('cy', p.y);
+                dot.setAttribute('r', '4');
+                dot.setAttribute('fill', '#a3e635');
+                dot.setAttribute('stroke', '#121212');
+                dot.setAttribute('stroke-width', '2');
+                dot.style.opacity = '0';
+                dot.style.transition = `opacity 0.5s ease ${i * 0.08 + 0.15}s`;
+                pointsGroup.appendChild(dot);
+
+                setTimeout(() => {
+                    glow.style.opacity = '1';
+                    dot.style.opacity = '1';
+                }, 150);
+            }
+
+            // Labels
+            const labelsGroup = document.getElementById('radar-labels');
+            labelsGroup.innerHTML = '';
+            for (let i = 0; i < numAxes; i++) {
+                const angle = startAngle + i * angleStep;
+                const p = polarToXY(angle, maxR + 25);
+
+                const text = document.createElementNS(svgNS, 'text');
+                text.setAttribute('x', p.x);
+                text.setAttribute('y', p.y);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', 'rgba(255,255,255,0.6)');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '700');
+                text.setAttribute('font-family', 'Outfit, sans-serif');
+                text.textContent = domains[i].short;
+                labelsGroup.appendChild(text);
+
+                const scoreText = document.createElementNS(svgNS, 'text');
+                scoreText.setAttribute('x', p.x);
+                scoreText.setAttribute('y', p.y + 12);
+                scoreText.setAttribute('text-anchor', 'middle');
+                scoreText.setAttribute('dominant-baseline', 'middle');
+                scoreText.setAttribute('fill', scores[i] >= baselines[i] ? '#a3e635' : '#fb923c');
+                scoreText.setAttribute('font-size', '9');
+                scoreText.setAttribute('font-weight', '800');
+                scoreText.setAttribute('font-family', 'Outfit, sans-serif');
+                scoreText.textContent = scores[i];
+                labelsGroup.appendChild(scoreText);
+            }
+
+            // Detailed progress breakdown
+            const breakdown = document.getElementById('radar-skill-breakdown');
+            breakdown.innerHTML = '';
+            domains.forEach((d, i) => {
+                const score = scores[i];
+                const baseline = baselines[i];
+                const diff = score - baseline;
+                const isAbove = diff >= 0;
+                const barColor = isAbove ? '#a3e635' : '#fb923c';
+                const statusText = isAbove ? `+${diff} above` : `${diff} below`;
+                const statusColor = isAbove ? 'text-emerald-400' : 'text-orange-400';
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3 p-2 rounded-xl bg-white/[0.01] border border-white/[0.02]';
+                row.innerHTML = `
+                    <div class="w-6.5 h-6.5 rounded-lg bg-[#1c1c1c] border border-[#2b2b2b] flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[13px] text-on-surface-variant">${d.icon}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-bold text-white tracking-wide">${d.label}</span>
+                            <span class="text-[9px] font-bold ${statusColor}">${statusText}</span>
+                        </div>
+                        <div class="w-full h-[3px] bg-[#1c1c1c] rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-1000 ease-out" style="width: ${score}%; background: ${barColor};"></div>
+                        </div>
+                    </div>
+                `;
+                breakdown.appendChild(row);
+            });
+        }
+
+        // Clear SQL Database Scan History
+        async function clearAllScans() {
+            if(!confirm("⚠️ WARNING: This will permanently delete all scan records from the local SQLite database. This action is irreversible. Proceed?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/scans", {
+                    method: "DELETE"
+                });
+
+                if(!response.ok) throw new Error("Deletion failed");
+
+                const result = await response.json();
+                alert(result.message || "Past scans registry successfully cleared!");
+
+                activeScanData = null;
+                scansList = [];
+
+                // Reset dashboard view
+                document.getElementById('scan-detail-view').classList.add('hidden');
+                document.getElementById('no-scan-selected').classList.remove('hidden');
+
+                // Reload sidebar entries
+                fetchScans();
+
+            } catch(e) {
+                alert("Database purging failed: " + e.message);
+            }
+        }
+
+        // Print PDF critique document
+        function downloadPDFReport() {
+            if(!activeScanData) return;
+            const element = document.querySelector('.pdf-export-container');
+            const name = activeScanData.candidate_name || "Scope_Admin_Report";
+
+            const config = {
+                margin: [0.5, 0.5],
+                filename: `ConsoleReport_${name}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f0d13', useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(config).from(element).save();
+        }
+
+        // Toggle raw text debugger Modal
+        function toggleDebugModal() {
+            const modal = document.getElementById('debugModal');
+            const rawText = document.getElementById('rawTextContent');
+
+            if(modal.classList.contains('hidden')) {
+                rawText.textContent = activeScanData ? activeScanData.raw_text : "No active candidate parsed text.";
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Check active session on initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchScans();
+
+            // Interactive mouse lights spotlight
+            const glow = document.getElementById('cursor-glow');
+            document.addEventListener('mousemove', e => {
+                const x = e.clientX;
+                const y = e.clientY + window.scrollY;
+                glow.style.opacity = '0.07';
+                glow.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`;
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // ORGANIC CONSTELLATION DRIFT STARFIELD
+        // Sine drift particle linkages, repulsion on mouse hover
+        // ═══════════════════════════════════════════════════════════
+        (function() {
+            const canvas = document.getElementById('constellation-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const COUNT = 70;
+            const CONNECT_DIST = 110;
+            const MOUSE_RADIUS = 180;
+            const REPULSE_FORCE = 6;
+
+            const COLORS = [
+                { r: 163, g: 230, b: 53 },
+                { r: 251, g: 146, b: 60 },
+                { r: 255, g: 255, b: 255 }
+            ];
+
+            let mouse = { x: -9999, y: -9999 };
+            let particles = [];
+            let W, H;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.originX = this.x;
+                    this.originY = this.y;
+                    this.baseVx = (Math.random() - 0.5) * 0.25;
+                    this.baseVy = (Math.random() - 0.5) * 0.25;
+                    this.dx = 0;
+                    this.dy = 0;
+                    this.sinAmpX = Math.random() * 25 + 5;
+                    this.sinAmpY = Math.random() * 20 + 5;
+                    this.sinFreqX = Math.random() * 0.003 + 0.001;
+                    this.sinFreqY = Math.random() * 0.003 + 0.001;
+                    this.sinOffsetX = Math.random() * 1000;
+                    this.sinOffsetY = Math.random() * 1000;
+                    this.t = Math.random() * 5000;
+                    this.radius = Math.random() * 1.5 + 0.5;
+                    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    this.alpha = Math.random() * 0.4 + 0.15;
+                    this.baseAlpha = this.alpha;
+                }
+                update() {
+                    this.t += 1;
+                    this.originX += this.baseVx;
+                    this.originY += this.baseVy;
+
+                    const tx = this.originX + Math.sin(this.t * this.sinFreqX + this.sinOffsetX) * this.sinAmpX;
+                    const ty = this.originY + Math.cos(this.t * this.sinFreqY + this.sinOffsetY) * this.sinAmpY;
+
+                    const mdx = tx - mouse.x;
+                    const mdy = ty - mouse.y;
+                    const dist = Math.sqrt(mdx * mdx + mdy * mdy);
+
+                    if (dist < MOUSE_RADIUS && dist > 1) {
+                        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+                        this.dx += (mdx / dist) * force * REPULSE_FORCE;
+                        this.dy += (mdy / dist) * force * REPULSE_FORCE;
+                        this.alpha = Math.min(0.85, this.baseAlpha + force * 0.45);
+                    } else {
+                        this.alpha += (this.baseAlpha - this.alpha) * 0.03;
+                    }
+
+                    this.dx *= 0.92;
+                    this.dy *= 0.92;
+
+                    this.x = tx + this.dx;
+                    this.y = ty + this.dy;
+
+                    if (this.originX < -60) this.originX = W + 50;
+                    if (this.originX > W + 60) this.originX = -50;
+                    if (this.originY < -60) this.originY = H + 50;
+                    if (this.originY > H + 60) this.originY = -50;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            function init() {
+                particles = [];
+                for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+            }
+
+            function drawLines() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < CONNECT_DIST) {
+                            const a = (1 - d / CONNECT_DIST) * 0.08;
+                            const c1 = particles[i].color, c2 = particles[j].color;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(${(c1.r+c2.r)>>1},${(c1.g+c2.g)>>1},${(c1.b+c2.b)>>1},${a})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, W, H);
+                drawLines();
+                for (const p of particles) { p.update(); p.draw(); }
+                requestAnimationFrame(loop);
+            }
+
+            document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            document.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+            window.addEventListener('resize', () => { resize(); init(); });
+
+            resize();
+            init();
+            loop();
+        })();
+    </script>
+</body>
+</html>

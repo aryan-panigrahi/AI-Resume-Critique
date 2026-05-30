@@ -10,6 +10,7 @@ def get_connection():
 def init_db():
     """
     Initializes the scans database and creates the scans table if it does not exist.
+    Also handles adding the job_description column if it is missing.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -25,9 +26,22 @@ def init_db():
         improvements TEXT,
         raw_text TEXT,
         is_resume INTEGER,
+        job_description TEXT,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
+    
+    # Check if job_description column exists, if not, add it (migration support)
+    try:
+        cursor.execute("PRAGMA table_info(scans)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if "job_description" not in columns:
+            print("[INFO] Migration: Adding job_description column to scans table...")
+            cursor.execute("ALTER TABLE scans ADD COLUMN job_description TEXT")
+            conn.commit()
+    except Exception as migration_err:
+        print(f"[WARN] Database migration failed: {migration_err}")
+        
     conn.commit()
     conn.close()
     print(f"[INFO] SQL Database initialized successfully at: {DB_PATH}")
@@ -44,6 +58,7 @@ def save_scan(data: dict) -> int:
     candidate_name = data.get("candidate_name", "Candidate")
     overall_score = int(data.get("overall_score", 0))
     summary = data.get("summary", "")
+    job_description = data.get("job_description", "")
     
     # Serialize complex lists/dicts to JSON strings
     strengths = json.dumps(data.get("strengths", []))
@@ -54,9 +69,9 @@ def save_scan(data: dict) -> int:
     is_resume = 1 if data.get("is_resume", True) else 0
     
     cursor.execute("""
-    INSERT INTO scans (filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume))
+    INSERT INTO scans (filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume, job_description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume, job_description))
     
     scan_id = cursor.lastrowid
     conn.commit()
@@ -99,7 +114,7 @@ def get_scan_by_id(scan_id: int) -> dict:
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT id, filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume, timestamp
+    SELECT id, filename, candidate_name, overall_score, summary, strengths, weaknesses, improvements, raw_text, is_resume, job_description, timestamp
     FROM scans
     WHERE id = ?
     """, (scan_id,))
@@ -120,6 +135,7 @@ def get_scan_by_id(scan_id: int) -> dict:
         "improvements": json.loads(r["improvements"] or "[]"),
         "raw_text": r["raw_text"],
         "is_resume": bool(r["is_resume"]),
+        "job_description": r["job_description"] if "job_description" in r.keys() else "",
         "timestamp": r["timestamp"]
     }
     conn.close()
